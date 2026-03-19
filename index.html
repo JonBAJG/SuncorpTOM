@@ -809,7 +809,7 @@ function showReqPanel(assetId){
       const saved=localStorage.getItem('scope_'+reqId)||'';
       const rowCls=saved==='in'?'scoped-in':saved==='out'?'scoped-out':'';
       h+=`<div class="rp-req ${rowCls}" id="reqrow_${reqId}">`;
-      h+=`<span class="rp-req-key" onclick="window.open('https://jira.suncorp.app/jira/browse/${e.k}','_blank')">${e.k}-R${ri+1}</span>`;
+      h+=`<span class="rp-req-key" onclick="window.open('https://jira.suncorp.app/jira/issues/?jql=project%20%3D%20DGIN%20AND%20issuetype%20%3D%20Requirement%20AND%20%22Epic%20Link%22%20%3D%20${e.k}%20ORDER%20BY%20key%20ASC','_blank')" title="View all requirements under ${e.k} in Jira">${e.k}-R${ri+1}</span>`;
       h+=`<span class="rp-req-sum">${r}</span>`;
       h+=`<span class="rp-req-type ${isNF?'rp-req-nf':'rp-req-f'}">${isNF?'NFR':'F'}</span>`;
       h+=`<span style="display:flex;gap:3px;margin-left:4px">`;
