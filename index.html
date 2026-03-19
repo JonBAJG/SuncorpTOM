@@ -218,7 +218,9 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <span class="sb-trophy" id="sbTrophy">🏆</span>
 </div>
 <div style="width:1px;height:50px;background:rgba(255,255,255,0.1)"></div>
-<!-- RIGHT: CVM Leaderboard -->
+<!-- RIGHT: CVM Scorecard -->
+<div style="border:1px solid var(--gold);border-radius:8px;padding:8px 10px 10px;position:relative">
+<div style="position:absolute;top:-8px;left:12px;background:var(--bg);padding:0 6px;font-size:8px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px">CVM Scorecard</div>
 <div style="display:flex;gap:6px;align-items:stretch">
 <div class="stat" style="border:1px solid var(--wade);border-radius:6px;padding:6px 16px;cursor:pointer" onclick="filterCVM('goodes')">
 <div class="stat-n" id="sbCvmGoodesTotal" style="color:var(--wade)">0</div>
@@ -247,8 +249,11 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-top:3px;display:flex"><div id="sbCvmFarrugiaBar" style="background:var(--odin);height:100%;width:0%;transition:width 0.5s"></div></div>
 </div>
 </div>
+</div>
 <div style="width:1px;height:50px;background:rgba(255,255,255,0.1)"></div>
-<!-- FAR RIGHT: Squad Leaderboard -->
+<!-- FAR RIGHT: Squad Scorecard -->
+<div style="border:1px solid var(--teal);border-radius:8px;padding:8px 10px 10px;position:relative">
+<div style="position:absolute;top:-8px;left:12px;background:var(--bg);padding:0 6px;font-size:8px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px">Squad Scorecard</div>
 <div style="display:flex;gap:6px;align-items:stretch">
 <div class="stat" style="border:1px solid var(--wade);border-radius:6px;padding:6px 12px;cursor:pointer" onclick="filterSquad('wade')">
 <div class="stat-n" id="sbSquadWadeTotal" style="color:var(--wade)">0</div>
@@ -280,6 +285,7 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <div style="display:flex;gap:6px;margin-top:2px;justify-content:center">
 <span style="font-size:7px;color:#2ECC71;font-weight:700" id="sbSquadRogueIn">✓ 0</span>
 <span style="font-size:7px;color:#95A5A6;font-weight:700" id="sbSquadRogue">? 0</span>
+</div>
 </div>
 </div>
 </div>
