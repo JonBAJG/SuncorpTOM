@@ -1088,36 +1088,40 @@ function updateScoreboard(){
   document.getElementById('sbBarIn').style.width=(total>0?(inC/total*100):0)+'%';
   document.getElementById('sbBarOut').style.width=(total>0?(outC/total*100):0)+'%';
   const mapped=inC+outC;
-  document.getElementById('sbMapped').textContent=mapped;
-  document.getElementById('sbBarMapped').style.width=(total>0?(mapped/total*100):0)+'%';
-  document.getElementById('sbMappedPct').textContent=pct+'% ('+mapped+'/'+total+')';
+  const elMapped=document.getElementById('sbMapped');if(elMapped)elMapped.textContent=mapped;
+  const elBarM=document.getElementById('sbBarMapped');if(elBarM)elBarM.style.width=(total>0?(mapped/total*100):0)+'%';
+  const elMPct=document.getElementById('sbMappedPct');if(elMPct)elMPct.textContent=pct+'% ('+mapped+'/'+total+')';
   const scopePct=mapped>0?Math.round((inC/mapped)*100):0;
   const el_scopePct=document.getElementById('sbScopePct');
   if(el_scopePct)el_scopePct.textContent=mapped>0?scopePct+'% in scope':'—';
-  // CVM boxes — mapped vs not mapped + in/out scope
-  document.getElementById('sbCvmGoodesTotal').textContent=cvmG.t;
-  document.getElementById('sbCvmGoodesF').textContent=cvmG.f+' F';
-  document.getElementById('sbCvmGoodesNF').textContent=cvmG.nf+' NF';
-  document.getElementById('sbCvmGoodesIn').textContent='✓ '+cvmG.done+' mapped';
-  document.getElementById('sbCvmGoodes').textContent='? '+cvmG.pend+' to go';
-  document.getElementById('sbCvmGoodesScope').textContent=cvmG.inS+' in';
-  document.getElementById('sbCvmGoodesOut').textContent=cvmG.outS+' out';
-  document.getElementById('sbCvmGoodesBar').style.width=cvmG.t>0?(cvmG.done/cvmG.t*100)+'%':'0%';
-  document.getElementById('sbCvmFarrugiaTotal').textContent=cvmS.t;
-  document.getElementById('sbCvmFarrugiaF').textContent=cvmS.f+' F';
-  document.getElementById('sbCvmFarrugiaNF').textContent=cvmS.nf+' NF';
-  document.getElementById('sbCvmFarrugiaIn').textContent='✓ '+cvmS.done+' mapped';
-  document.getElementById('sbCvmFarrugia').textContent='? '+cvmS.pend+' to go';
-  document.getElementById('sbCvmFarrugiaScope').textContent=cvmS.inS+' in';
-  document.getElementById('sbCvmFarrugiaOut').textContent=cvmS.outS+' out';
-  document.getElementById('sbCvmFarrugiaBar').style.width=cvmS.t>0?(cvmS.done/cvmS.t*100)+'%':'0%';
+  // Safe setter — won't crash if element doesn't exist
+  function S(id,val){const el=document.getElementById(id);if(el)el.textContent=val}
+  function SB(id,val){const el=document.getElementById(id);if(el)el.style.width=val}
+  // CVM boxes
+  S('sbCvmGoodesTotal',cvmG.t);
+  S('sbCvmGoodesF',cvmG.f+' F');
+  S('sbCvmGoodesNF',cvmG.nf+' NF');
+  S('sbCvmGoodesIn','✓ '+cvmG.done+' mapped');
+  S('sbCvmGoodes','? '+cvmG.pend+' to go');
+  S('sbCvmGoodesScope',cvmG.inS+' in');
+  S('sbCvmGoodesOut',cvmG.outS+' out');
+  SB('sbCvmGoodesBar',cvmG.t>0?(cvmG.done/cvmG.t*100)+'%':'0%');
+  S('sbCvmFarrugiaTotal',cvmS.t);
+  S('sbCvmFarrugiaF',cvmS.f+' F');
+  S('sbCvmFarrugiaNF',cvmS.nf+' NF');
+  S('sbCvmFarrugiaIn','✓ '+cvmS.done+' mapped');
+  S('sbCvmFarrugia','? '+cvmS.pend+' to go');
+  S('sbCvmFarrugiaScope',cvmS.inS+' in');
+  S('sbCvmFarrugiaOut',cvmS.outS+' out');
+  SB('sbCvmFarrugiaBar',cvmS.t>0?(cvmS.done/cvmS.t*100)+'%':'0%');
   // Squad boxes
   ['Wade','Odin','Stanlee','Rogue'].forEach(s=>{
     const key=s.toLowerCase();
     const d=sq[key];if(!d)return;
-    const el=document.getElementById('sbSquad'+s+'Total');if(el)el.textContent=d.t;
-    const ip=document.getElementById('sbSquad'+s+'In');if(ip)ip.textContent='✓ '+d.done+' mapped';
-    const pp=document.getElementById('sbSquad'+s);if(pp){pp.textContent='? '+d.pend+' to go';pp.style.color=d.pend===0&&d.t>0?'#2ECC71':'#95A5A6'}
+    S('sbSquad'+s+'Total',d.t);
+    S('sbSquad'+s+'In','✓ '+d.done+' mapped');
+    const pp=document.getElementById('sbSquad'+s);
+    if(pp){pp.textContent='? '+d.pend+' to go';pp.style.color=d.pend===0&&d.t>0?'#2ECC71':'#95A5A6'}
   });
   const pendBlock=document.getElementById('sbPendingBlock');
   const trophy=document.getElementById('sbTrophy');
