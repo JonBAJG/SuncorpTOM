@@ -855,7 +855,7 @@ function showReqPanel(assetId){
       const saved=localStorage.getItem('scope_'+reqId)||'';
       const rowCls=saved==='in'?'scoped-in':saved==='out'?'scoped-out':'';
       h+=`<div class="rp-req ${rowCls}" id="reqrow_${reqId}">`;
-      h+=`<span class="rp-req-key" onclick="window.open('https://jira.suncorp.app/jira/browse/' + r.k, '_blank')" title="View requirement in Jira">${r.k}</span>`;
+      h+=`<a class="rp-req-key" href="https://jira.suncorp.app/jira/browse/${r.k}" target="_blank" title="Open ${r.k} in Jira">${r.k}</a>`;
       h+=`<span class="rp-req-sum">${r.s}</span>`;
       h+=`<span class="rp-req-type ${isNF?'rp-req-nf':'rp-req-f'}">${isNF?'NFR':'F'}</span>`;
       h+=`<span style="display:flex;gap:3px;margin-left:4px">`;
