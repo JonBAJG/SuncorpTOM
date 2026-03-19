@@ -8,7 +8,7 @@
 :root{--bg:#0a0a1a;--source:#E67E22;--bronze:#CD7F32;--silver:#95A5A6;--gold:#D4A843;--downstream:#1A2B4A;--teal:#0D8B8B;--highlight:#00E5FF;--wade:#3498DB;--odin:#2ECC71;--stanlee:#9B59B6;--rogue:#E67E22;--desc:#C0392B}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:#ccc;overflow-x:auto}
-.header{padding:16px 24px;background:linear-gradient(135deg,#0d1117,#1a1a2e);border-bottom:2px solid var(--teal)}
+.header{padding:16px 24px;background:linear-gradient(135deg,#0d1117,#1a1a2e);border-bottom:2px solid var(--teal);display:grid;grid-template-columns:60% 40%;gap:24px;align-items:start}
 h1{font-size:20px;color:var(--gold);font-weight:700}
 .subtitle{font-size:11px;color:var(--teal);margin-top:2px}
 .controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
@@ -18,7 +18,7 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 .btn.active{background:var(--teal);color:#fff;border-color:var(--teal)}
 .stats{display:flex;gap:16px;padding:10px 24px;background:rgba(0,0,0,0.3)}
 .stat{text-align:center;padding:6px 12px}
-.stat-n{font-size:20px;font-weight:800;color:var(--gold)}
+.stat-n{font-size:28px;font-weight:800;color:var(--gold)}
 .stat-l{font-size:8px;color:#666;text-transform:uppercase;letter-spacing:1px}
 .pipeline{display:flex;padding:12px;gap:2px;min-width:2200px;min-height:calc(100vh - 140px)}
 .lane{flex:1;display:flex;flex-direction:column;min-width:280px}
@@ -150,10 +150,28 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 .sb-bar-pct{font-size:9px;color:var(--teal);margin-top:2px;text-align:center}
 .sb-trophy{font-size:16px;margin-left:8px;opacity:0;transition:opacity 0.5s}
 .sb-trophy.visible{opacity:1}
+.header-left{display:flex;flex-direction:column}
+.header-right{display:flex;flex-direction:column;gap:8px}
+.header-right .rp-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}
+.header-right .rp-summary-n{font-size:28px}
+.gold-assets-bar{display:flex;gap:0;padding:6px 24px;background:rgba(0,0,0,0.2);border-bottom:1px solid rgba(255,255,255,0.1);flex-wrap:wrap;align-items:center}
+.gold-group{display:inline-flex;gap:2px;padding:4px 0;align-items:center;margin-right:12px}
+.gold-group-label{font-size:7px;color:#888;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;min-width:55px;padding:4px 6px}
+.gold-group-buttons{display:inline-flex;gap:2px}
+.gold-btn{font-size:12px;padding:6px 14px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#ccc;cursor:pointer;transition:all 0.15s;min-width:80px}
+.gold-btn:hover{background:rgba(255,255,255,0.12)}
+.gold-btn.active{background:var(--teal);color:#fff;border-color:var(--teal);font-weight:700}
+.scope-progress{display:flex;gap:16px;padding:6px 24px;background:rgba(212,168,67,0.05);border-bottom:1px solid rgba(212,168,67,0.2);align-items:center}
+.scope-progress-label{font-size:8px;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:700;min-width:80px}
+.scope-progress-bar{flex:1;height:12px;background:rgba(255,255,255,0.06);border-radius:6px;overflow:hidden;display:flex}
+.scope-progress-in{background:linear-gradient(90deg,#2ECC71,#27AE60);height:100%}
+.scope-progress-out{background:linear-gradient(90deg,#E74C3C,#C0392B);height:100%}
+.scope-progress-pct{font-size:8px;color:var(--teal);min-width:40px;text-align:right}
 </style>
 </head>
 <body>
 <div class="header">
+<div class="header-left">
 <h1>DI R2 — Unified Data Platform — End-to-End Traceability</h1>
 <div class="subtitle">Click any element to trace its full path through the Medallion Architecture | Source → Bronze → Silver → Gold → Downstream</div>
 <div class="controls">
@@ -175,31 +193,99 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <span style="margin-left:16px"></span>
 <button class="btn" onclick="clearTrace()" style="border-color:#E74C3C;color:#E74C3C">✕ Clear</button>
 </div>
-<div class="controls" style="margin-top:6px;gap:4px">
-<label style="color:var(--gold)">Gold Assets:</label>
-<span style="display:inline-flex;gap:3px;padding:3px 6px;border:1px solid var(--stanlee);border-radius:6px;background:rgba(155,89,182,0.08)">
-<span style="font-size:8px;color:var(--stanlee);font-weight:700;padding:3px 0">STANLEE</span>
-<button class="btn" onclick="selectGold('gold_cust_rel')" style="border-color:var(--stanlee);font-size:10px;padding:4px 10px">Customer Rel</button>
-<button class="btn" onclick="selectGold('gold_cust_fdn_insights')" style="border-color:var(--stanlee);font-size:10px;padding:4px 10px">Customer Fdn</button>
-</span>
-<span style="display:inline-flex;gap:3px;padding:3px 6px;border:1px solid var(--wade);border-radius:6px;background:rgba(52,152,219,0.08)">
-<span style="font-size:8px;color:var(--wade);font-weight:700;padding:3px 0">WADE</span>
-<button class="btn" onclick="selectGold('gold_policy_rem')" style="border-color:var(--wade);font-size:10px;padding:4px 10px">Policy Rem</button>
-</span>
-<span style="display:inline-flex;gap:3px;padding:3px 6px;border:1px solid var(--odin);border-radius:6px;background:rgba(46,204,113,0.08)">
-<span style="font-size:8px;color:var(--odin);font-weight:700;padding:3px 0">ODIN</span>
-<button class="btn" onclick="selectGold('gold_actuarial')" style="border-color:var(--odin);font-size:10px;padding:4px 10px">Actuarial</button>
-<button class="btn" onclick="selectGold('gold_automation')" style="border-color:var(--odin);font-size:10px;padding:4px 10px">Automation</button>
-<button class="btn" onclick="selectGold('gold_opex')" style="border-color:var(--odin);font-size:10px;padding:4px 10px">OpEx</button>
-<button class="btn" onclick="selectGold('gold_enlighten')" style="border-color:var(--odin);font-size:10px;padding:4px 10px">Enlighten</button>
-<button class="btn" onclick="selectGold('gold_fraud')" style="border-color:var(--odin);font-size:10px;padding:4px 10px">Fraud</button>
-<button class="btn" onclick="selectGold('gold_tax')" style="border-color:var(--odin);font-size:10px;padding:4px 10px">Tax</button>
-</span>
-<span style="display:inline-flex;gap:3px;padding:3px 6px;border:1px solid var(--rogue);border-radius:6px;background:rgba(230,126,34,0.08)">
-<span style="font-size:8px;color:var(--rogue);font-weight:700;padding:3px 0">ROGUE</span>
-<button class="btn" onclick="selectGold('gold_pricing')" style="border-color:var(--rogue);font-size:10px;padding:4px 10px">Pricing</button>
-<button class="btn" onclick="selectGold('gold_cape')" style="border-color:var(--rogue);font-size:10px;padding:4px 10px">CaPE</button>
-</span>
+</div>
+<div class="header-right">
+<div style="border:1px solid rgba(212,168,67,0.3);border-radius:8px;padding:8px 10px;position:relative">
+<div style="position:absolute;top:-8px;left:12px;background:linear-gradient(135deg,#0d1117,#1a1a2e);padding:0 6px;font-size:8px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px">CVM Scorecard</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px">
+<div class="stat" style="border:1px solid var(--wade);border-radius:6px;padding:6px 12px;cursor:pointer;text-align:center" onclick="filterCVM('goodes')">
+<div class="stat-n" id="sbCvmGoodesTotal" style="color:var(--wade);margin:0">0</div>
+<div class="stat-l">David Goodes</div>
+<div style="display:flex;gap:4px;margin-top:2px;justify-content:center">
+<span style="font-size:7px;color:#2ECC71;font-weight:700" id="sbCvmGoodesScope">0 in</span>
+<span style="font-size:7px;color:#E74C3C" id="sbCvmGoodesOut">0 out</span>
+</div>
+</div>
+<div class="stat" style="border:1px solid var(--odin);border-radius:6px;padding:6px 12px;cursor:pointer;text-align:center" onclick="filterCVM('farrugia')">
+<div class="stat-n" id="sbCvmFarrugiaTotal" style="color:var(--odin);margin:0">0</div>
+<div class="stat-l">Steven Farrugia</div>
+<div style="display:flex;gap:4px;margin-top:2px;justify-content:center">
+<span style="font-size:7px;color:#2ECC71;font-weight:700" id="sbCvmFarrugiaScope">0 in</span>
+<span style="font-size:7px;color:#E74C3C" id="sbCvmFarrugiaOut">0 out</span>
+</div>
+</div>
+</div>
+</div>
+<div style="border:1px solid rgba(13,139,139,0.3);border-radius:8px;padding:8px 10px;position:relative">
+<div style="position:absolute;top:-8px;left:12px;background:linear-gradient(135deg,#0d1117,#1a1a2e);padding:0 6px;font-size:8px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px">Squad Scorecard</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px">
+<div class="stat" style="border:1px solid var(--wade);border-radius:6px;padding:6px 8px;cursor:pointer;text-align:center" onclick="filterSquad('wade')">
+<div class="stat-n" id="sbSquadWadeTotal" style="color:var(--wade);margin:0;font-size:24px">0</div>
+<div class="stat-l">Wade</div>
+<div style="display:flex;gap:3px;margin-top:2px;justify-content:center;font-size:7px">
+<span style="color:#2ECC71;font-weight:700" id="sbSquadWadeIn">✓ 0</span>
+<span style="color:#95A5A6;font-weight:700" id="sbSquadWade">? 0</span>
+</div>
+</div>
+<div class="stat" style="border:1px solid var(--odin);border-radius:6px;padding:6px 8px;cursor:pointer;text-align:center" onclick="filterSquad('odin')">
+<div class="stat-n" id="sbSquadOdinTotal" style="color:var(--odin);margin:0;font-size:24px">0</div>
+<div class="stat-l">Odin</div>
+<div style="display:flex;gap:3px;margin-top:2px;justify-content:center;font-size:7px">
+<span style="color:#2ECC71;font-weight:700" id="sbSquadOdinIn">✓ 0</span>
+<span style="color:#95A5A6;font-weight:700" id="sbSquadOdin">? 0</span>
+</div>
+</div>
+<div class="stat" style="border:1px solid var(--stanlee);border-radius:6px;padding:6px 8px;cursor:pointer;text-align:center" onclick="filterSquad('stanlee')">
+<div class="stat-n" id="sbSquadStanleeTotal" style="color:var(--stanlee);margin:0;font-size:24px">0</div>
+<div class="stat-l">StanLee</div>
+<div style="display:flex;gap:3px;margin-top:2px;justify-content:center;font-size:7px">
+<span style="color:#2ECC71;font-weight:700" id="sbSquadStanleeIn">✓ 0</span>
+<span style="color:#95A5A6;font-weight:700" id="sbSquadStanlee">? 0</span>
+</div>
+</div>
+<div class="stat" style="border:1px solid var(--rogue);border-radius:6px;padding:6px 8px;cursor:pointer;text-align:center" onclick="filterSquad('rogue')">
+<div class="stat-n" id="sbSquadRogueTotal" style="color:var(--rogue);margin:0;font-size:24px">0</div>
+<div class="stat-l">Rogue</div>
+<div style="display:flex;gap:3px;margin-top:2px;justify-content:center;font-size:7px">
+<span style="color:#2ECC71;font-weight:700" id="sbSquadRogueIn">✓ 0</span>
+<span style="color:#95A5A6;font-weight:700" id="sbSquadRogue">? 0</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="gold-assets-bar" id="goldAssetsBar">
+<div class="gold-group">
+<span class="gold-group-label">STANLEE</span>
+<div class="gold-group-buttons">
+<button class="gold-btn" onclick="selectGold('gold_cust_rel')">Customer Rel</button>
+<button class="gold-btn" onclick="selectGold('gold_cust_fdn_insights')">Customer Fdn</button>
+</div>
+</div>
+<div class="gold-group">
+<span class="gold-group-label">WADE</span>
+<div class="gold-group-buttons">
+<button class="gold-btn" onclick="selectGold('gold_policy_rem')">Policy Rem</button>
+</div>
+</div>
+<div class="gold-group">
+<span class="gold-group-label">ODIN</span>
+<div class="gold-group-buttons">
+<button class="gold-btn" onclick="selectGold('gold_actuarial')">Actuarial</button>
+<button class="gold-btn" onclick="selectGold('gold_automation')">Automation</button>
+<button class="gold-btn" onclick="selectGold('gold_opex')">OpEx</button>
+<button class="gold-btn" onclick="selectGold('gold_enlighten')">Enlighten</button>
+<button class="gold-btn" onclick="selectGold('gold_fraud')">Fraud</button>
+<button class="gold-btn" onclick="selectGold('gold_tax')">Tax</button>
+</div>
+</div>
+<div class="gold-group">
+<span class="gold-group-label">ROGUE</span>
+<div class="gold-group-buttons">
+<button class="gold-btn" onclick="selectGold('gold_pricing')">Pricing</button>
+<button class="gold-btn" onclick="selectGold('gold_cape')">CaPE</button>
+</div>
 </div>
 </div>
 <div class="scoreboard" id="scoreboard" style="flex-wrap:nowrap;padding:8px 24px">
@@ -229,86 +315,14 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <div style="width:80px"><div class="sb-bar-track" style="height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;display:flex"><div class="sb-bar-in" id="sbBarIn" style="width:0%"></div><div class="sb-bar-out" id="sbBarOut" style="width:0%"></div></div><div id="sbScopePct" style="font-size:8px;color:#888;text-align:center;margin-top:2px">—</div></div>
 </div>
 </div>
-<div style="width:1px;height:50px;background:rgba(255,255,255,0.1)"></div>
-<!-- RIGHT: CVM Scorecard -->
-<div style="border:1px solid var(--gold);border-radius:8px;padding:8px 10px 10px;position:relative">
-<div style="position:absolute;top:-8px;left:12px;background:var(--bg);padding:0 6px;font-size:8px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px">CVM Scorecard</div>
-<div style="display:flex;gap:6px;align-items:stretch">
-<div class="stat" style="border:1px solid var(--wade);border-radius:6px;padding:6px 16px;cursor:pointer" onclick="filterCVM('goodes')">
-<div class="stat-n" id="sbCvmGoodesTotal" style="color:var(--wade)">0</div>
-<div class="stat-l">David Goodes</div>
-<div style="display:flex;gap:8px;margin-top:2px;justify-content:center">
-<span style="font-size:8px;color:var(--gold);font-weight:700" id="sbCvmGoodesF">0 F</span>
-<span style="font-size:8px;color:#9B59B6;font-weight:700" id="sbCvmGoodesNF">0 NF</span>
 </div>
-<div style="display:flex;gap:4px;margin-top:2px;justify-content:center">
-<span style="font-size:7px;color:#2ECC71;font-weight:700" id="sbCvmGoodesIn">✓ 0 mapped</span>
-<span style="font-size:7px;color:#95A5A6;font-weight:700" id="sbCvmGoodes">? 0 to go</span>
+<div class="scope-progress" id="scopeProgressBar">
+<span class="scope-progress-label">Scope Progress:</span>
+<div class="scope-progress-bar">
+<div class="scope-progress-in" id="scopeProgressIn" style="width:0%"></div>
+<div class="scope-progress-out" id="scopeProgressOut" style="width:0%"></div>
 </div>
-<div style="display:flex;gap:4px;margin-top:1px;justify-content:center">
-<span style="font-size:7px;color:#2ECC71" id="sbCvmGoodesScope">0 in</span>
-<span style="font-size:7px;color:#E74C3C" id="sbCvmGoodesOut">0 out</span>
-</div>
-<div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-top:3px;display:flex"><div id="sbCvmGoodesBar" style="background:var(--wade);height:100%;width:0%;transition:width 0.5s"></div></div>
-</div>
-<div class="stat" style="border:1px solid var(--odin);border-radius:6px;padding:6px 16px;cursor:pointer" onclick="filterCVM('farrugia')">
-<div class="stat-n" id="sbCvmFarrugiaTotal" style="color:var(--odin)">0</div>
-<div class="stat-l">Steven Farrugia</div>
-<div style="display:flex;gap:8px;margin-top:2px;justify-content:center">
-<span style="font-size:8px;color:var(--gold);font-weight:700" id="sbCvmFarrugiaF">0 F</span>
-<span style="font-size:8px;color:#9B59B6;font-weight:700" id="sbCvmFarrugiaNF">0 NF</span>
-</div>
-<div style="display:flex;gap:4px;margin-top:2px;justify-content:center">
-<span style="font-size:7px;color:#2ECC71;font-weight:700" id="sbCvmFarrugiaIn">✓ 0 mapped</span>
-<span style="font-size:7px;color:#95A5A6;font-weight:700" id="sbCvmFarrugia">? 0 to go</span>
-</div>
-<div style="display:flex;gap:4px;margin-top:1px;justify-content:center">
-<span style="font-size:7px;color:#2ECC71" id="sbCvmFarrugiaScope">0 in</span>
-<span style="font-size:7px;color:#E74C3C" id="sbCvmFarrugiaOut">0 out</span>
-</div>
-<div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-top:3px;display:flex"><div id="sbCvmFarrugiaBar" style="background:var(--odin);height:100%;width:0%;transition:width 0.5s"></div></div>
-</div>
-</div>
-</div>
-<div style="width:1px;height:50px;background:rgba(255,255,255,0.1)"></div>
-<!-- FAR RIGHT: Squad Scorecard -->
-<div style="border:1px solid var(--teal);border-radius:8px;padding:8px 10px 10px;position:relative">
-<div style="position:absolute;top:-8px;left:12px;background:var(--bg);padding:0 6px;font-size:8px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px">Squad Scorecard</div>
-<div style="display:flex;gap:6px;align-items:stretch">
-<div class="stat" style="border:1px solid var(--wade);border-radius:6px;padding:6px 12px;cursor:pointer" onclick="filterSquad('wade')">
-<div class="stat-n" id="sbSquadWadeTotal" style="color:var(--wade)">0</div>
-<div class="stat-l">Wade</div>
-<div style="display:flex;gap:6px;margin-top:2px;justify-content:center">
-<span style="font-size:7px;color:#2ECC71;font-weight:700" id="sbSquadWadeIn">✓ 0</span>
-<span style="font-size:7px;color:#95A5A6;font-weight:700" id="sbSquadWade">? 0</span>
-</div>
-</div>
-<div class="stat" style="border:1px solid var(--odin);border-radius:6px;padding:6px 12px;cursor:pointer" onclick="filterSquad('odin')">
-<div class="stat-n" id="sbSquadOdinTotal" style="color:var(--odin)">0</div>
-<div class="stat-l">Odin</div>
-<div style="display:flex;gap:6px;margin-top:2px;justify-content:center">
-<span style="font-size:7px;color:#2ECC71;font-weight:700" id="sbSquadOdinIn">✓ 0</span>
-<span style="font-size:7px;color:#95A5A6;font-weight:700" id="sbSquadOdin">? 0</span>
-</div>
-</div>
-<div class="stat" style="border:1px solid var(--stanlee);border-radius:6px;padding:6px 12px;cursor:pointer" onclick="filterSquad('stanlee')">
-<div class="stat-n" id="sbSquadStanleeTotal" style="color:var(--stanlee)">0</div>
-<div class="stat-l">StanLee</div>
-<div style="display:flex;gap:6px;margin-top:2px;justify-content:center">
-<span style="font-size:7px;color:#2ECC71;font-weight:700" id="sbSquadStanleeIn">✓ 0</span>
-<span style="font-size:7px;color:#95A5A6;font-weight:700" id="sbSquadStanlee">? 0</span>
-</div>
-</div>
-<div class="stat" style="border:1px solid var(--rogue);border-radius:6px;padding:6px 12px;cursor:pointer" onclick="filterSquad('rogue')">
-<div class="stat-n" id="sbSquadRogueTotal" style="color:var(--rogue)">0</div>
-<div class="stat-l">Rogue</div>
-<div style="display:flex;gap:6px;margin-top:2px;justify-content:center">
-<span style="font-size:7px;color:#2ECC71;font-weight:700" id="sbSquadRogueIn">✓ 0</span>
-<span style="font-size:7px;color:#95A5A6;font-weight:700" id="sbSquadRogue">? 0</span>
-</div>
-</div>
-</div>
-</div>
+<span class="scope-progress-pct" id="scopeProgressPct">0% reviewed</span>
 </div>
 <div class="stats" id="statsBar">
 <div class="stat" onclick="highlightLane('l-source')" style="cursor:pointer" title="Click to highlight source systems"><div class="stat-n">23</div><div class="stat-l">Sources</div></div>
@@ -554,6 +568,12 @@ const panel=document.getElementById('infoPanel');
 nodes.forEach(n=>{n.addEventListener('click',()=>traceNode(n))});
 
 function selectGold(goldId){
+  // Update active button styling
+  document.querySelectorAll('.gold-btn').forEach(b=>b.classList.remove('active'));
+  const activeBtn=document.querySelector(`.gold-btn[onclick*="${goldId}"]`);
+  if(activeBtn)activeBtn.classList.add('active');
+  // Show requirements panel
+  showReqPanel(goldId);
   const el=document.querySelector(`[data-id="${goldId}"]`);
   if(el){
     traceNode(el);
@@ -794,7 +814,10 @@ function showReqPanel(assetId){
   const a=AD[assetId];if(!a){reqPanel.classList.remove('open');return;}
   const totalF=a.epics.reduce((s,e)=>s+e.f,0);
   const totalNF=a.epics.reduce((s,e)=>s+e.nf,0);
-  let h=`<button class="rp-close" onclick="document.getElementById('reqPanel').classList.remove('open')">&times;</button>`;
+  let h=`<div style="display:flex;gap:8px;position:absolute;top:10px;right:14px">`;
+  h+=`<button class="btn" style="font-size:9px;padding:4px 8px" onclick="clearAsset('${assetId}')" title="Clear all scope data for this asset">🔄 Reset</button>`;
+  h+=`<button class="rp-close" onclick="document.getElementById('reqPanel').classList.remove('open')">&times;</button>`;
+  h+=`</div>`;
   h+=`<h2>${a.name}</h2>`;
   h+=`<span class="rp-cead">${a.cead}</span><span class="rp-squad ${a.sqcls}" style="padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;margin-left:6px">${a.squad}</span>`;
   h+=`<span style="font-size:9px;color:#888;margin-left:8px">CVM: ${a.cvm}</span>`;
@@ -834,15 +857,20 @@ function showReqPanel(assetId){
   h+=`<div class="rp-section">Epic Breakdown (click to expand requirements)</div>`;
   a.epics.forEach((e,ei)=>{
     const confCls=e.conf==='confirmed'?'rp-conf-confirmed':'rp-conf-multi';
+    const epicScopeKey='epic_scope_'+assetId+'_'+ei;
+    const epicScope=localStorage.getItem(epicScopeKey)||'';
+    const epicScopeCls=epicScope==='in'?'row-approved':epicScope==='out'?'row-rejected':'';
     h+=`<div class="rp-epic">`;
-    h+=`<div class="rp-epic-hdr" id="epichdr_${assetId}_${ei}">`;
+    h+=`<div class="rp-epic-hdr ${epicScopeCls}" id="epichdr_${assetId}_${ei}">`;
     h+=`<span class="rp-epic-key"><a href="https://jira.suncorp.app/jira/browse/${e.k}" target="_blank" onclick="event.stopPropagation()">${e.k}</a></span>`;
     h+=`<span class="rp-epic-name" onclick="toggleReqs('${assetId}_${ei}')">${e.n}</span>`;
     h+=`<span class="rp-epic-counts">${e.f}F | ${e.nf}NF</span>`;
     h+=`<span class="rp-conf ${confCls}">${e.conf}</span>`;
     if(e.linked!=='—')h+=`<span style="font-size:7px;color:#E67E22;margin-left:4px">${e.linked}</span>`;
     h+=`<span style="display:flex;gap:2px;margin-left:6px">`;
-    h+=`<button class="scope-btn scope-in" style="font-size:7px;padding:1px 5px" onclick="event.stopPropagation();setEpicScope('${assetId}',${ei},'in')" title="Mark all requirements In Scope">ALL ✓</button>`;
+    h+=`<button class="scope-btn scope-in ${epicScope==='in'?'active':''}" style="font-size:7px;padding:1px 5px" onclick="event.stopPropagation();setEpicHeaderScope('${assetId}',${ei},'in')" title="Mark epic In Scope">✓</button>`;
+    h+=`<button class="scope-btn scope-out ${epicScope==='out'?'active':''}" style="font-size:7px;padding:1px 5px" onclick="event.stopPropagation();setEpicHeaderScope('${assetId}',${ei},'out')" title="Mark epic Out of Scope">✗</button>`;
+    h+=`<button class="scope-btn scope-in" style="font-size:7px;padding:1px 5px;margin-left:8px;border-left:1px solid rgba(255,255,255,0.1);padding-left:8px" onclick="event.stopPropagation();setEpicScope('${assetId}',${ei},'in')" title="Mark all requirements In Scope">ALL ✓</button>`;
     h+=`<button class="scope-btn scope-out" style="font-size:7px;padding:1px 5px" onclick="event.stopPropagation();setEpicScope('${assetId}',${ei},'out')" title="Mark all requirements Out of Scope">ALL ✗</button>`;
     h+=`</span>`;
     h+=`</div>`;
@@ -870,6 +898,11 @@ function showReqPanel(assetId){
     const epicKeys=a.epics.map(e=>e.k).join(', ');
     h+=`<div style="margin-top:12px"><a href="https://jira.suncorp.app/jira/issues/?jql=project%20%3D%20DGIN%20AND%20issuetype%20%3D%20Requirement%20AND%20%22Epic%20Link%22%20in%20(${a.epics.map(e=>e.k).join('%2C%20')})%20ORDER%20BY%20key%20ASC" target="_blank" style="font-size:9px;color:var(--teal);text-decoration:none;border:1px solid var(--teal);padding:4px 8px;border-radius:3px">View all in Jira →</a></div>`;
   }
+  h+=`<div class="rp-section">Add Epic</div>`;
+  h+=`<div style="display:flex;gap:4px;margin-bottom:12px">`;
+  h+=`<input id="addEpicInput_${assetId}" type="text" placeholder="Enter Epic Key (e.g. DGIN-12345)" style="flex:1;padding:6px 8px;font-size:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:3px;color:#ccc" />`;
+  h+=`<button class="btn" style="font-size:9px;padding:4px 12px" onclick="addEpicToPanel('${assetId}')">Add</button>`;
+  h+=`</div>`;
   reqPanel.innerHTML=h;
   reqPanel.classList.add('open');
 }
@@ -927,13 +960,73 @@ function setEpicScope(assetId,ei,scope){
       if(activeBtn)activeBtn.classList.add('active');
     }
   });
+  updateScopeCount(assetId+'_'+ei);
+  updateScoreboard();
+}
+function setEpicHeaderScope(assetId,ei,scope){
+  const a=AD[assetId];if(!a)return;
+  const e=a.epics[ei];if(!e)return;
+  const epicScopeKey='epic_scope_'+assetId+'_'+ei;
+  const current=localStorage.getItem(epicScopeKey);
+  const newScope=(current===scope)?'':scope;
+  if(newScope)localStorage.setItem(epicScopeKey,newScope);
+  else localStorage.removeItem(epicScopeKey);
   // Update epic header styling
   const hdr=document.getElementById('epichdr_'+assetId+'_'+ei);
   if(hdr){
     hdr.classList.remove('row-approved','row-rejected');
-    hdr.classList.add(scope==='in'?'row-approved':'row-rejected');
+    if(newScope==='in')hdr.classList.add('row-approved');
+    if(newScope==='out')hdr.classList.add('row-rejected');
   }
-  updateScopeCount(assetId+'_'+ei);
+  // Update epic header buttons
+  const btns=hdr?hdr.querySelectorAll('.scope-btn.scope-in, .scope-btn.scope-out'):[];
+  btns.forEach(b=>{if(b.textContent.includes('ALL'))return;b.classList.remove('active')});
+  if(newScope&&hdr){
+    const activeBtn=hdr.querySelector('.scope-'+newScope);
+    if(activeBtn&&!activeBtn.textContent.includes('ALL'))activeBtn.classList.add('active');
+  }
+  // Dim/undim child requirements
+  const reqs=document.getElementById('reqs_'+assetId+'_'+ei);
+  if(reqs){
+    const rows=reqs.querySelectorAll('.rp-req');
+    rows.forEach(r=>{
+      if(newScope==='out')r.style.opacity='0.5';
+      else r.style.opacity='1';
+    });
+  }
+  updateScoreboard();
+}
+function clearAsset(assetId){
+  if(!confirm('Clear all scope data for this asset? This cannot be undone.'))return;
+  const a=AD[assetId];if(!a)return;
+  // Remove all scope localStorage entries
+  a.epics.forEach((e,ei)=>{
+    e.reqs.forEach((r,ri)=>{
+      const key='scope_'+assetId+'_'+ei+'_'+ri;
+      localStorage.removeItem(key);
+    });
+    // Remove epic scope
+    localStorage.removeItem('epic_scope_'+assetId+'_'+ei);
+  });
+  // Re-render panel
+  showReqPanel(assetId);
+  updateScoreboard();
+}
+function addEpicToPanel(assetId){
+  const a=AD[assetId];if(!a)return;
+  const inp=document.getElementById('addEpicInput_'+assetId);
+  const epicKey=inp?inp.value.trim():'';
+  if(!epicKey)return alert('Enter an epic key');
+  // Create new epic entry
+  const newEpic={k:epicKey,n:'(Loading from Jira...)',f:0,nf:0,conf:'Unconfirmed',linked:'—',reqs:[]};
+  a.epics.push(newEpic);
+  // Save to localStorage
+  const addedKey='added_epics_'+assetId;
+  const added=JSON.parse(localStorage.getItem(addedKey)||'[]');
+  added.push(epicKey);
+  localStorage.setItem(addedKey,JSON.stringify(added));
+  // Re-render panel
+  showReqPanel(assetId);
   updateScoreboard();
 }
 function toggleReqs(id){
@@ -1029,6 +1122,17 @@ function updateScoreboard(){
   if(grc)grc.textContent=totalF+'F + '+totalNF+'NF mapped';
   const sf=document.getElementById('statF');if(sf)sf.textContent=totalF+' F';
   const snf=document.getElementById('statNF');if(snf)snf.textContent=totalNF+' NF';
+  // Update scope progress bar
+  const scopeBar=document.getElementById('scopeProgressBar');
+  if(scopeBar){
+    const allMapped=inC+outC;
+    const inPct=allMapped>0?(inC/allMapped*100):0;
+    const outPct=allMapped>0?(outC/allMapped*100):0;
+    document.getElementById('scopeProgressIn').style.width=inPct+'%';
+    document.getElementById('scopeProgressOut').style.width=outPct+'%';
+    const reviewedPct=total>0?Math.round(((inC+outC)/total)*100):0;
+    document.getElementById('scopeProgressPct').textContent=reviewedPct+'% reviewed';
+  }
 }
 // Highlight entire lane when clicking stats
 function highlightLane(laneCls){
