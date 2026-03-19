@@ -211,16 +211,22 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <div class="sb-bar"><div class="sb-bar-track"><div class="sb-bar-in" id="sbBarIn" style="width:0%"></div><div class="sb-bar-out" id="sbBarOut" style="width:0%"></div></div><div class="sb-bar-pct" id="sbPct">0% reviewed</div></div>
 <span class="sb-trophy" id="sbTrophy">🏆</span>
 </div>
-<div class="stats">
-<div class="stat"><div class="stat-n">23</div><div class="stat-l">Sources</div></div>
-<div class="stat"><div class="stat-n">18</div><div class="stat-l">Bronze Landing</div></div>
-<div class="stat"><div class="stat-n">12</div><div class="stat-l">Bronze STD</div></div>
-<div class="stat"><div class="stat-n">17</div><div class="stat-l">Silver Raw Vault</div></div>
-<div class="stat"><div class="stat-n">8</div><div class="stat-l">Silver Business Vault</div></div>
-<div class="stat"><div class="stat-n">3</div><div class="stat-l">Gold Foundation</div></div>
-<div class="stat"><div class="stat-n">16</div><div class="stat-l">Gold Assets</div></div>
-<div class="stat"><div class="stat-n">44</div><div class="stat-l">Downstream</div></div>
-<div class="stat"><div class="stat-n">615</div><div class="stat-l">Requirements</div></div>
+<div class="stats" id="statsBar">
+<div class="stat" onclick="highlightLane('l-source')" style="cursor:pointer" title="Click to highlight source systems"><div class="stat-n">23</div><div class="stat-l">Sources</div></div>
+<div style="color:var(--teal);font-size:14px;align-self:center;opacity:0.3">→</div>
+<div class="stat" onclick="highlightLane('l-bronze')" style="cursor:pointer;border-left:3px solid var(--bronze)" title="Click to highlight bronze layer"><div class="stat-n">18</div><div class="stat-l">Bronze Landing</div><div style="font-size:7px;color:var(--bronze);margin-top:2px">12 STD</div></div>
+<div style="color:var(--teal);font-size:14px;align-self:center;opacity:0.3">→</div>
+<div class="stat" onclick="highlightLane('l-silver')" style="cursor:pointer;border-left:3px solid var(--silver)" title="Click to highlight silver layer"><div class="stat-n">25</div><div class="stat-l">Silver Vault</div><div style="font-size:7px;color:var(--silver);margin-top:2px">17 Raw + 8 BV</div></div>
+<div style="color:var(--teal);font-size:14px;align-self:center;opacity:0.3">→</div>
+<div class="stat" onclick="highlightLane('l-gold')" style="cursor:pointer;border-left:3px solid var(--gold)" title="Click to highlight gold layer"><div class="stat-n">16</div><div class="stat-l">Gold Assets</div><div style="font-size:7px;color:var(--gold);margin-top:2px" id="goldReqCount">0 reqs mapped</div></div>
+<div style="color:var(--teal);font-size:14px;align-self:center;opacity:0.3">→</div>
+<div class="stat" onclick="highlightLane('l-down')" style="cursor:pointer;border-left:3px solid var(--teal)" title="Click to highlight downstream consumers"><div class="stat-n">44</div><div class="stat-l">Downstream</div></div>
+<div style="width:1px;height:30px;background:rgba(255,255,255,0.1);align-self:center;margin:0 8px"></div>
+<div class="stat" style="border:1px solid var(--gold);border-radius:6px;padding:6px 16px">
+<div class="stat-n" id="totalReqsStat" style="color:var(--gold)">0</div>
+<div class="stat-l">Total Requirements</div>
+<div style="font-size:7px;margin-top:2px"><span style="color:#2ECC71" id="reqsMapped">0</span> mapped · <span style="color:#E74C3C" id="reqsUnmapped">0</span> unmapped</div>
+</div>
 </div>
 
 <div class="pipeline" id="pipeline">
@@ -802,6 +808,32 @@ function updateScoreboard(){
     trophy.classList.remove('visible');
   }
 }
+// Highlight entire lane when clicking stats
+function highlightLane(laneCls){
+  clearTrace();
+  document.querySelectorAll('.'+laneCls+' .node').forEach(n=>n.classList.add('highlighted'));
+  document.querySelectorAll('.node:not(.highlighted)').forEach(n=>n.classList.add('dimmed'));
+}
+
+// Update requirement counts in stats bar
+function updateStatsCounts(){
+  let total=0, mapped=0;
+  Object.keys(AD).forEach(aid=>{
+    const a=AD[aid];
+    a.epics.forEach(e=>{total+=e.reqs.length; mapped+=e.reqs.length});
+  });
+  // Count assets with no epics as unmapped
+  let unmapped=0;
+  Object.keys(AD).forEach(aid=>{
+    if(AD[aid].epics.length===0)unmapped++;
+  });
+  document.getElementById('totalReqsStat').textContent=total;
+  document.getElementById('goldReqCount').textContent=total+' reqs mapped';
+  document.getElementById('reqsMapped').textContent=total+' mapped';
+  document.getElementById('reqsUnmapped').textContent=unmapped+' assets unmapped';
+}
+updateStatsCounts();
+
 // Update on load
 updateScoreboard();
 
