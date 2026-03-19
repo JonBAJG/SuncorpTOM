@@ -841,18 +841,18 @@ function showReqPanel(assetId){
   const assetPend=totalF+totalNF-assetIn-assetOut;
   const assetPct=(totalF+totalNF)>0?Math.round(((assetIn+assetOut)/(totalF+totalNF))*100):0;
   h+=`<div class="rp-section">Requirements Summary</div>`;
-  h+=`<div class="rp-summary" style="grid-template-columns:repeat(5,1fr)">`;
+  h+=`<div class="rp-summary" style="grid-template-columns:repeat(5,1fr)" data-asset="${assetId}">`;
   h+=`<div><div class="rp-summary-n gold">${totalF}</div><div class="rp-summary-l">Functional</div></div>`;
   h+=`<div><div class="rp-summary-n" style="color:#9B59B6">${totalNF}</div><div class="rp-summary-l">Non-Functional</div></div>`;
-  h+=`<div><div class="rp-summary-n green">${assetIn}</div><div class="rp-summary-l">In Scope ✓</div></div>`;
-  h+=`<div><div class="rp-summary-n" style="color:#E74C3C">${assetOut}</div><div class="rp-summary-l">Out Scope ✗</div></div>`;
-  h+=`<div><div class="rp-summary-n" style="color:#95A5A6">${assetPend}</div><div class="rp-summary-l">Pending</div></div>`;
+  h+=`<div><div class="rp-summary-n green" id="panelIn_${assetId}">${assetIn}</div><div class="rp-summary-l">In Scope ✓</div></div>`;
+  h+=`<div><div class="rp-summary-n" style="color:#E74C3C" id="panelOut_${assetId}">${assetOut}</div><div class="rp-summary-l">Out Scope ✗</div></div>`;
+  h+=`<div><div class="rp-summary-n" style="color:#95A5A6" id="panelPend_${assetId}">${assetPend}</div><div class="rp-summary-l">Pending</div></div>`;
   h+=`</div>`;
   h+=`<div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;display:flex;margin-bottom:6px">`;
-  h+=`<div style="width:${(totalF+totalNF)>0?(assetIn/(totalF+totalNF)*100):0}%;background:#2ECC71;height:100%"></div>`;
-  h+=`<div style="width:${(totalF+totalNF)>0?(assetOut/(totalF+totalNF)*100):0}%;background:#E74C3C;height:100%"></div>`;
+  h+=`<div id="panelBarIn_${assetId}" style="width:${(totalF+totalNF)>0?(assetIn/(totalF+totalNF)*100):0}%;background:#2ECC71;height:100%;transition:width 0.3s"></div>`;
+  h+=`<div id="panelBarOut_${assetId}" style="width:${(totalF+totalNF)>0?(assetOut/(totalF+totalNF)*100):0}%;background:#E74C3C;height:100%;transition:width 0.3s"></div>`;
   h+=`</div>`;
-  h+=`<div style="font-size:9px;color:#888;margin-bottom:8px">${assetPct}% reviewed | Confidence: <span class="rp-conf rp-conf-${a.conf==='Confirmed'?'confirmed':'multi'}">${a.conf}</span></div>`;
+  h+=`<div style="font-size:9px;color:#888;margin-bottom:8px" id="panelPct_${assetId}">${assetPct}% reviewed | Confidence: <span class="rp-conf rp-conf-${a.conf==='Confirmed'?'confirmed':'multi'}">${a.conf}</span></div>`;
   if(a.warning)h+=`<div style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:4px;padding:8px;margin:8px 0;font-size:9px;color:#E74C3C">⚠️ ${a.warning}</div>`;
   h+=`<div class="rp-section">Epic Breakdown (click to expand requirements)</div>`;
   a.epics.forEach((e,ei)=>{
@@ -928,7 +928,29 @@ function setScope(reqId,scope,totalReqs,epicId){
   }
   // Update scope counter
   updateScopeCount(epicId);
+  // Update panel summary for the asset
+  const assetId=reqId.split('_').slice(0,-2).join('_');
+  updatePanelSummary(assetId);
   updateScoreboard();
+}
+function updatePanelSummary(assetId){
+  const a=AD[assetId];if(!a)return;
+  const totalF=a.epics.reduce((s,e)=>s+e.f,0);
+  const totalNF=a.epics.reduce((s,e)=>s+e.nf,0);
+  const total=totalF+totalNF;
+  let inC=0,outC=0;
+  a.epics.forEach((e,ei)=>{e.reqs.forEach((r,ri)=>{
+    const v=localStorage.getItem('scope_'+assetId+'_'+ei+'_'+ri);
+    if(v==='in')inC++;if(v==='out')outC++;
+  })});
+  const pend=total-inC-outC;
+  const pct=total>0?Math.round(((inC+outC)/total)*100):0;
+  const elIn=document.getElementById('panelIn_'+assetId);if(elIn)elIn.textContent=inC;
+  const elOut=document.getElementById('panelOut_'+assetId);if(elOut)elOut.textContent=outC;
+  const elPend=document.getElementById('panelPend_'+assetId);if(elPend)elPend.textContent=pend;
+  const elBarIn=document.getElementById('panelBarIn_'+assetId);if(elBarIn)elBarIn.style.width=(total>0?(inC/total*100):0)+'%';
+  const elBarOut=document.getElementById('panelBarOut_'+assetId);if(elBarOut)elBarOut.style.width=(total>0?(outC/total*100):0)+'%';
+  const elPct=document.getElementById('panelPct_'+assetId);if(elPct)elPct.innerHTML=pct+'% reviewed | Confidence: <span class="rp-conf rp-conf-'+(a.conf==='Confirmed'?'confirmed':'multi')+'">'+a.conf+'</span>';
 }
 function updateScopeCount(epicId){
   const counter=document.getElementById('scopecount_'+epicId);
@@ -961,6 +983,7 @@ function setEpicScope(assetId,ei,scope){
     }
   });
   updateScopeCount(assetId+'_'+ei);
+  updatePanelSummary(assetId);
   updateScoreboard();
 }
 function setEpicHeaderScope(assetId,ei,scope){
