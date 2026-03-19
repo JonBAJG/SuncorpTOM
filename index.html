@@ -90,8 +90,8 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 .rp-reqs.open{max-height:2000px}
 .rp-req{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:9px;border-top:1px solid rgba(255,255,255,0.04)}
 .rp-req:hover{background:rgba(255,255,255,0.03)}
-.rp-req-key{color:var(--teal);font-weight:600;min-width:70px;cursor:pointer}
-.rp-req-key:hover{text-decoration:underline}
+.rp-req-key{color:var(--teal);font-weight:600;min-width:85px;cursor:pointer;display:inline-block;padding:2px 4px;border-radius:3px;text-decoration:none;z-index:5;position:relative}
+.rp-req-key:hover{text-decoration:underline;background:rgba(13,139,139,0.15)}
 .rp-req-sum{flex:1;color:#bbb}
 .rp-req-type{font-size:7px;padding:1px 4px;border-radius:2px;font-weight:700}
 .rp-req-f{background:rgba(52,152,219,0.3);color:#3498DB}
@@ -855,7 +855,7 @@ function showReqPanel(assetId){
       const saved=localStorage.getItem('scope_'+reqId)||'';
       const rowCls=saved==='in'?'scoped-in':saved==='out'?'scoped-out':'';
       h+=`<div class="rp-req ${rowCls}" id="reqrow_${reqId}">`;
-      h+=`<a class="rp-req-key" href="https://jira.suncorp.app/jira/browse/${r.k}" target="_blank" title="Open ${r.k} in Jira">${r.k}</a>`;
+      h+=`<a class="rp-req-key" href="https://jira.suncorp.app/jira/browse/${r.k}" target="_blank" rel="noopener" title="Open ${r.k} in Jira" onclick="event.stopPropagation();window.open('https://jira.suncorp.app/jira/browse/${r.k}','_blank');return false;">${r.k}</a>`;
       h+=`<span class="rp-req-sum">${r.s}</span>`;
       h+=`<span class="rp-req-type ${isNF?'rp-req-nf':'rp-req-f'}">${isNF?'NFR':'F'}</span>`;
       h+=`<span style="display:flex;gap:3px;margin-left:4px">`;
