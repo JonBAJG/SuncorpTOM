@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DI R2 — E2E Data Pipeline — Traceability Dashboard</title>
+<style>
+:root{--bg:#0a0a1a;--source:#E67E22;--bronze:#CD7F32;--silver:#95A5A6;--gold:#D4A843;--downstream:#1A2B4A;--teal:#0D8B8B;--highlight:#00E5FF;--wade:#3498DB;--odin:#2ECC71;--stanlee:#9B59B6;--rogue:#E67E22;--desc:#C0392B}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:#ccc;overflow-x:auto}
+.header{padding:16px 24px;background:linear-gradient(135deg,#0d1117,#1a1a2e);border-bottom:2px solid var(--teal)}
+h1{font-size:20px;color:var(--gold);font-weight:700}
+.subtitle{font-size:11px;color:var(--teal);margin-top:2px}
+.controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.controls label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:0.5px}
+.btn{font-size:10px;padding:4px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#ccc;cursor:pointer;transition:all 0.15s}
+.btn:hover{background:rgba(255,255,255,0.12);border-color:var(--teal)}
+.btn.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+.stats{display:flex;gap:16px;padding:10px 24px;background:rgba(0,0,0,0.3)}
+.stat{text-align:center;padding:6px 12px}
+.stat-n{font-size:20px;font-weight:800;color:var(--gold)}
+.stat-l{font-size:8px;color:#666;text-transform:uppercase;letter-spacing:1px}
+.pipeline{display:flex;padding:12px;gap:2px;min-width:2200px;min-height:calc(100vh - 140px)}
+.lane{flex:1;display:flex;flex-direction:column;min-width:280px}
+.lane-hdr{padding:8px 12px;text-align:center;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:6px 6px 0 0;position:sticky;top:0;z-index:10}
+.lane-body{flex:1;padding:6px;border-radius:0 0 6px 6px;overflow-y:auto}
+.l-source .lane-hdr{background:var(--source);color:#fff}
+.l-source .lane-body{background:rgba(230,126,34,0.06);border:1px solid rgba(230,126,34,0.2)}
+.l-bronze .lane-hdr{background:var(--bronze);color:#fff}
+.l-bronze .lane-body{background:rgba(205,127,50,0.06);border:1px solid rgba(205,127,50,0.2)}
+.l-silver .lane-hdr{background:var(--silver);color:#fff}
+.l-silver .lane-body{background:rgba(149,165,166,0.06);border:1px solid rgba(149,165,166,0.2)}
+.l-gold .lane-hdr{background:var(--gold);color:#1a1a2e}
+.l-gold .lane-body{background:rgba(212,168,67,0.06);border:1px solid rgba(212,168,67,0.2)}
+.l-down .lane-hdr{background:var(--downstream);color:#fff;border:1px solid var(--teal)}
+.l-down .lane-body{background:rgba(26,43,74,0.12);border:1px solid rgba(26,43,74,0.4)}
+.group{margin-bottom:6px}
+.group-title{font-size:9px;font-weight:700;color:var(--teal);padding:3px 6px;border-bottom:1px solid rgba(13,139,139,0.2);text-transform:uppercase;letter-spacing:0.5px}
+.node{font-size:10px;padding:5px 8px;margin:2px 0;border-radius:4px;cursor:pointer;transition:all 0.2s;border-left:3px solid transparent;position:relative}
+.node:hover{filter:brightness(1.3);transform:translateX(2px)}
+.n-source{background:rgba(230,126,34,0.1);border-left-color:var(--source);color:#F5CBA7}
+.n-bronze{background:rgba(205,127,50,0.1);border-left-color:var(--bronze);color:#E8C49A}
+.n-silver{background:rgba(149,165,166,0.08);border-left-color:var(--silver);color:#D5D5D5}
+.n-gold{background:rgba(212,168,67,0.1);border-left-color:var(--gold);color:#F0DCA0}
+.n-down{background:rgba(13,139,139,0.08);border-left-color:var(--teal);color:#A3D9D5}
+.n-descoped{background:rgba(192,57,43,0.08);border-left-color:var(--desc);color:#E74C3C;text-decoration:line-through;opacity:0.5}
+.node.highlighted{background:rgba(0,229,255,0.15)!important;border-left-color:var(--highlight)!important;color:#fff!important;box-shadow:0 0 8px rgba(0,229,255,0.3);opacity:1!important;transform:translateX(3px)}
+.node.dimmed{opacity:0.15!important}
+.transfer{font-size:8px;color:var(--teal);padding:1px 8px;font-style:italic}
+.tag{font-size:7px;padding:1px 4px;border-radius:2px;margin-left:3px;font-weight:600;display:inline-block}
+.t-wade{background:rgba(52,152,219,0.3);color:var(--wade)}
+.t-odin{background:rgba(46,204,113,0.3);color:var(--odin)}
+.t-stanlee{background:rgba(155,89,182,0.3);color:var(--stanlee)}
+.t-rogue{background:rgba(230,126,34,0.3);color:var(--rogue)}
+.cead{font-size:7px;color:#888;margin-right:3px}
+.arrow-col{display:flex;flex-direction:column;justify-content:center;align-items:center;width:20px;min-width:20px}
+.arrow-col .arr{color:var(--teal);font-size:16px;opacity:0.3}
+.arrow-col.highlighted .arr{opacity:1;color:var(--highlight);text-shadow:0 0 6px var(--highlight)}
+.info-panel{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(0deg,rgba(10,10,26,0.98),rgba(10,10,26,0.9));border-top:2px solid var(--teal);padding:12px 24px;display:none;z-index:100}
+.req-panel{position:fixed;top:0;right:-520px;width:500px;height:100vh;background:rgba(10,10,26,0.98);border-left:3px solid var(--gold);z-index:200;overflow-y:auto;transition:right 0.3s ease;padding:16px}
+.req-panel.open{right:0}
+.req-panel .rp-close{position:absolute;top:10px;right:14px;background:none;border:none;color:#666;font-size:18px;cursor:pointer}.req-panel .rp-close:hover{color:#fff}
+.req-panel h2{font-size:15px;color:var(--gold);margin-bottom:2px}
+.req-panel .rp-cead{font-size:10px;color:#888}
+.req-panel .rp-squad{font-size:10px;padding:4px 10px;border-radius:3px;font-weight:700;margin-left:6px}
+.req-panel .rp-section{font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid rgba(13,139,139,0.3)}
+.req-panel table{width:100%;border-collapse:collapse;font-size:10px}
+.req-panel th{text-align:left;color:#666;font-size:8px;text-transform:uppercase;letter-spacing:0.5px;padding:4px 6px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.req-panel td{padding:4px 6px;border-bottom:1px solid rgba(255,255,255,0.05);color:#ccc}
+.req-panel a{color:var(--teal);text-decoration:none}.req-panel a:hover{text-decoration:underline}
+.rp-epic{margin-bottom:8px;border:1px solid rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.rp-epic-hdr{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(155,89,182,0.08);cursor:pointer;transition:background 0.15s}
+.rp-epic-hdr:hover{background:rgba(155,89,182,0.15)}
+.rp-epic-hdr.row-approved{background:rgba(46,204,113,0.12);border-left:3px solid #2ECC71}
+.rp-epic-hdr.row-rejected{background:rgba(231,76,60,0.12);border-left:3px solid #E74C3C}
+.rp-epic-key{font-size:9px;color:#9B59B6;font-weight:700}
+.rp-epic-name{font-size:10px;color:#ccc;flex:1;margin:0 8px}
+.rp-epic-counts{font-size:9px;color:#888;white-space:nowrap}
+.rp-conf{font-size:7px;padding:1px 4px;border-radius:2px;font-weight:700;margin:0 4px}
+.rp-conf-confirmed{background:rgba(46,204,113,0.3);color:#2ECC71}
+.rp-conf-multi{background:rgba(230,126,34,0.3);color:#E67E22}
+.rp-rbtn{width:22px;height:22px;border-radius:3px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#ccc;font-size:11px;cursor:pointer;transition:all 0.15s;opacity:0.3}
+.rp-rbtn:hover{opacity:0.6}
+.rp-rbtn.sel{opacity:1;transform:scale(1.1)}
+.rp-rbtn.sel-yes{background:#2ECC71;color:#fff;border-color:#2ECC71}
+.rp-rbtn.sel-no{background:#E74C3C;color:#fff;border-color:#E74C3C}
+.rp-rbtn.sel-maybe{background:#95A5A6;color:#fff;border-color:#95A5A6}
+.rp-status{font-size:8px;font-weight:700;margin-left:4px;min-width:55px;text-align:center}
+.rp-reqs{max-height:0;overflow:hidden;transition:max-height 0.3s ease}
+.rp-reqs.open{max-height:2000px}
+.rp-req{display:flex;align-items:center;gap:6px;padding:5px 10px;font-size:9px;border-top:1px solid rgba(255,255,255,0.04)}
+.rp-req:hover{background:rgba(255,255,255,0.03)}
+.rp-req-key{color:var(--teal);font-weight:600;min-width:70px;cursor:pointer}
+.rp-req-key:hover{text-decoration:underline}
+.rp-req-sum{flex:1;color:#bbb}
+.rp-req-type{font-size:7px;padding:1px 4px;border-radius:2px;font-weight:700}
+.rp-req-f{background:rgba(52,152,219,0.3);color:#3498DB}
+.rp-req-nf{background:rgba(155,89,182,0.3);color:#9B59B6}
+.rp-expand{font-size:8px;color:#888;cursor:pointer;padding:2px 10px}
+.rp-expand:hover{color:var(--teal)}
+.scope-btn{padding:2px 6px;border-radius:3px;border:1px solid rgba(255,255,255,0.15);font-size:8px;font-weight:700;cursor:pointer;transition:all 0.15s;min-width:28px;text-align:center}
+.scope-btn:hover{transform:scale(1.05)}
+.scope-in{background:rgba(46,204,113,0.15);border-color:rgba(46,204,113,0.4);color:#888}
+.scope-in.active{background:#2ECC71;color:#fff;border-color:#2ECC71;box-shadow:0 0 6px rgba(46,204,113,0.4)}
+.scope-out{background:rgba(231,76,60,0.15);border-color:rgba(231,76,60,0.4);color:#888}
+.scope-out.active{background:#E74C3C;color:#fff;border-color:#E74C3C;box-shadow:0 0 6px rgba(231,76,60,0.4)}
+.rp-req.scoped-in{background:rgba(46,204,113,0.06);border-left:2px solid #2ECC71}
+.rp-req.scoped-out{background:rgba(231,76,60,0.06);border-left:2px solid #E74C3C;opacity:0.5}
+.scope-count{font-size:9px;padding:6px 10px;color:#888;display:flex;gap:12px}
+.scope-count .sc-in{color:#2ECC71;font-weight:700}
+.scope-count .sc-out{color:#E74C3C;font-weight:700}
+.scope-count .sc-pending{color:#95A5A6;font-weight:700}
+.rp-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0;padding:10px;background:rgba(0,0,0,0.3);border-radius:4px}
+.rp-summary-n{font-size:16px;font-weight:800;text-align:center}
+.rp-summary-l{font-size:7px;color:#666;text-align:center;text-transform:uppercase}
+.rp-summary .green{color:#2ECC71}.rp-summary .gold{color:var(--gold)}
+.info-panel.visible{display:flex;gap:20px;align-items:flex-start}
+.info-panel h3{color:var(--highlight);font-size:13px;margin-bottom:4px}
+.info-panel .path{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.info-panel .path-node{font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600}
+.info-panel .path-arrow{color:var(--teal);font-size:14px}
+.info-panel .close-btn{position:absolute;top:8px;right:16px;cursor:pointer;color:#666;font-size:16px}
+.info-panel .close-btn:hover{color:#fff}
+.info-details{font-size:10px;color:#999;max-width:400px}
+.info-details td{padding:1px 8px 1px 0}
+.info-details .label{color:#666;text-transform:uppercase;font-size:8px;letter-spacing:0.5px}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>DI R2 — Unified Data Platform — End-to-End Traceability</h1>
+<div class="subtitle">Click any element to trace its full path through the Medallion Architecture | Source → Bronze → Silver → Gold → Downstream</div>
+<div class="controls">
+<label>Filter by squad:</label>
+<button class="btn" onclick="filterSquad('all')">All</button>
+<button class="btn" onclick="filterSquad('wade')" style="border-color:var(--wade)">Wade (243)</button>
+<button class="btn" onclick="filterSquad('odin')" style="border-color:var(--odin)">Odin (119)</button>
+<button class="btn" onclick="filterSquad('stanlee')" style="border-color:var(--stanlee)">StanLee (123)</button>
+<button class="btn" onclick="filterSquad('rogue')" style="border-color:var(--rogue)">Rogue (130)</button>
+<span style="margin-left:16px"></span>
+<label>Filter by CVM:</label>
+<button class="btn" onclick="filterCVM('all')">All</button>
+<button class="btn" onclick="filterCVM('goodes')">David Goodes</button>
+<button class="btn" onclick="filterCVM('farrugia')">Steven Farrugia</button>
+<span style="margin-left:16px"></span>
+<label>Trace mode:</label>
+<button class="btn active" id="btnImpact" onclick="setMode('impact')">Impact (support)</button>
+<button class="btn" id="btnLineage" onclick="setMode('lineage')">Lineage (direct)</button>
+<span style="margin-left:16px"></span>
+<button class="btn" onclick="clearTrace()" style="border-color:#E74C3C;color:#E74C3C">✕ Clear</button>
+</div>
+<div class="controls" style="margin-top:6px;gap:4px">
+<label style="color:var(--gold)">Gold Assets:</label>
+<span style="display:inline-flex;gap:3px;padding:3px 6px;border:1px solid var(--stanlee);border-radius:6px;background:rgba(155,89,182,0.08)">
+<span style="font-size:8px;color:var(--stanlee);font-weight:700;padding:3px 0">STANLEE</span>
+<button class="btn" onclick="selectGold('gold_cust_rel')" style="border-color:var(--stanlee);font-size:10px;padding:4px 10px">Customer Rel</button>
+<button class="btn" onclick="selectGold('gold_cust_fdn_insights')" style="border-color:var(--stanlee);font-size:10px;padding:4px 10px">Customer Fdn</button>
+</span>
+<span style="display:inline-flex;gap:3px;padding:3px 6px;border:1px solid var(--wade);border-radius:6px;background:rgba(52,152,219,0.08)">
+<span style="font-size:8px;color:var(--wade);font-weight:700;padding:3px 0">WADE</span>
+<button class="btn" onclick="selectGold('gold_policy_rem')" style="border-color:var(--wade);font-size:10px;padding:4px 10px">Policy Rem</button>
+</span>
+<span style="display:inline-flex;gap:3px;padding:3px 6px;border:1px solid var(--odin);border-radius:6px;background:rgba(46,204,113,0.08)">
+<span style="font-size:8px;color:var(--odin);font-weight:700;padding:3px 0">ODIN</span>
+<button class="btn" onclick="selectGold('gold_actuarial')" style="border-color:var(--odin);font-size:10px;padding:4px 10px">Actuarial</button>
+<button class="btn" onclick="selectGold('gold_automation')" style="border-color:var(--odin);font-size:10px;padding:4px 10px">Automation</button>
+<button class="btn" onclick="selectGold('gold_opex')" style="border-color:var(--odin);font-size:10px;padding:4px 10px">OpEx</button>
+<button class="btn" onclick="selectGold('gold_enlighten')" style="border-color:var(--odin);font-size:10px;padding:4px 10px">Enlighten</button>
+<button class="btn" onclick="selectGold('gold_fraud')" style="border-color:var(--odin);font-size:10px;padding:4px 10px">Fraud</button>
+<button class="btn" onclick="selectGold('gold_tax')" style="border-color:var(--odin);font-size:10px;padding:4px 10px">Tax</button>
+</span>
+<span style="display:inline-flex;gap:3px;padding:3px 6px;border:1px solid var(--rogue);border-radius:6px;background:rgba(230,126,34,0.08)">
+<span style="font-size:8px;color:var(--rogue);font-weight:700;padding:3px 0">ROGUE</span>
+<button class="btn" onclick="selectGold('gold_pricing')" style="border-color:var(--rogue);font-size:10px;padding:4px 10px">Pricing</button>
+<button class="btn" onclick="selectGold('gold_cape')" style="border-color:var(--rogue);font-size:10px;padding:4px 10px">CaPE</button>
+</span>
+</div>
+</div>
+<div class="stats">
+<div class="stat"><div class="stat-n">23</div><div class="stat-l">Sources</div></div>
+<div class="stat"><div class="stat-n">18</div><div class="stat-l">Bronze Landing</div></div>
+<div class="stat"><div class="stat-n">12</div><div class="stat-l">Bronze STD</div></div>
+<div class="stat"><div class="stat-n">17</div><div class="stat-l">Silver Raw Vault</div></div>
+<div class="stat"><div class="stat-n">8</div><div class="stat-l">Silver Business Vault</div></div>
+<div class="stat"><div class="stat-n">3</div><div class="stat-l">Gold Foundation</div></div>
+<div class="stat"><div class="stat-n">16</div><div class="stat-l">Gold Assets</div></div>
+<div class="stat"><div class="stat-n">44</div><div class="stat-l">Downstream</div></div>
+<div class="stat"><div class="stat-n">615</div><div class="stat-l">Requirements</div></div>
+</div>
+
+<div class="pipeline" id="pipeline">
+
+<!-- SOURCE SYSTEMS -->
+<div class="lane l-source">
+<div class="lane-hdr">Source Systems</div>
+<div class="lane-body">
+<div class="group"><div class="group-title">Duck Creek (DC Clarity)</div>
+<div class="node n-source" data-id="dc_policy" data-paths="bz_dc_policy,bz_std_dc_policy,rv_dc_policy,bv_policy,gold_policy_fdn,gold_policy_rem,gold_automation,gold_actuarial,gold_fraud,down_bots,down_bi,down_actuarial,down_fraud,down_compliance">DC_Policy</div>
+<div class="node n-source" data-id="dc_quotes" data-paths="bz_dc_quotes,bz_std_dc_quotes,rv_dc_quotes,bv_quotes,gold_pricing_fdn,gold_pricing,gold_cape,gold_sfmc,down_pricing,down_sfmc">DC_Quotes</div>
+<div class="node n-source" data-id="dc_billing" data-paths="bz_dc_billing,rv_dc_billing,bv_billing,gold_automation,gold_actuarial,gold_opex,gold_enlighten,gold_tax,down_bots,down_actuarial,down_bi,down_enlighten,down_tax">DC_Billing</div>
+<div class="node n-source" data-id="dc_earnings" data-paths="bz_dc_earnings,bz_std_dc_earnings,rv_earnings,rv_ceded,rv_unceded,gold_actuarial,down_actuarial">DC_Earnings</div>
+<div class="node n-source" data-id="dc_party" data-paths="bz_dc_party,rv_dc_party,rv_dc_address,bv_customer,bv_address,gold_cust_fdn,gold_cust_rel,gold_cust_fdn_insights,down_marketing,down_custintel,down_compliance">DC_Party</div>
+<div class="node n-source" data-id="dc_bal" data-paths="bz_dc_bal">DC_Balance&Control</div>
+<div class="transfer">→ FiveTran CDC (real-time)</div></div>
+
+<div class="group"><div class="group-title">Customer MDM</div>
+<div class="node n-source" data-id="cmdm" data-paths="bz_cmdm,rv_cmdm,bv_customer,bv_c2p,gold_cust_fdn,gold_cust_rel,gold_cust_fdn_insights,down_custintel,down_compliance,down_marketing">CMDM</div>
+<div class="node n-source" data-id="cmdm_mp" data-paths="bz_cmdm_mp,bz_std_cmdm_mp,rv_cmdm_addr,bv_address,bv_customer,gold_cust_fdn,gold_cust_rel,down_custintel">CMDM_MemberParty</div>
+<div class="transfer">→ FiveTran CDC (real-time)</div></div>
+
+<div class="group"><div class="group-title">Reference Data</div>
+<div class="node n-source" data-id="rdm" data-paths="bz_rdm,bz_std_rdm">RDM</div>
+<div class="node n-source" data-id="cref" data-paths="bz_cref,bz_std_cref">Central REF</div>
+<div class="transfer">→ FiveTran CDC (real-time)</div></div>
+
+<div class="group"><div class="group-title">Legacy</div>
+<div class="node n-source" data-id="protect" data-paths="bz_protect,bz_std_protect,rv_prt_billing,rv_prt_party,rv_prt_addr,rv_prt_products,gold_policy_rem,down_coex,down_bi">Protect</div>
+<div class="transfer">→ SFTP (daily batch)</div>
+<div class="node n-source" data-id="nurv" data-paths="bz_nurv,bz_std_nurv,pv_nurv">NURV TSI</div></div>
+
+<div class="group"><div class="group-title">External</div>
+<div class="node n-source" data-id="finity" data-paths="bz_finity,gold_actuarial,down_actuarial">Finity (Actuarial)</div>
+<div class="node n-source" data-id="adobe" data-paths="bz_adobe,rv_aa_gen,gold_automation,down_bots">Adobe Analytics (GQ)</div>
+<div class="transfer">→ API / File</div></div>
+
+<div class="group"><div class="group-title">Databricks CDP</div>
+<div class="node n-source" data-id="dbx_claims" data-paths="bz_dbx_claims,bz_std_dbx_claims,down_claims">DBX Claims Insights</div>
+<div class="node n-source" data-id="dbx_cust" data-paths="bz_dbx_cust,bz_std_dbx_cust,down_custintel">DBX Customer Insights</div>
+<div class="node n-source" data-id="dbx_ddo" data-paths="bz_dbx_ddo,bz_std_dbx_ddo,down_ddo">DBX DDO Insights</div>
+<div class="transfer">→ Internal platform</div></div>
+
+<div class="group"><div class="group-title">SAS CaPE</div>
+<div class="node n-source" data-id="sas" data-paths="gold_cape,down_pricing">50+ RPT_* pricing/geo tables</div>
+<div class="transfer">→ S3 batch (Control-M)</div></div>
+
+<div class="group"><div class="group-title">Other</div>
+<div class="node n-source" data-id="genesys" data-paths="down_compliance">Genesys OBD</div>
+<div class="node n-source" data-id="aai" data-paths="gold_aainz,down_aainz">AAI Sources</div>
+<div class="node n-source" data-id="ani" data-paths="down_coex">ANI Sources</div>
+<div class="node n-source" data-id="pentaho" data-paths="">Pentaho</div>
+<div class="node n-source" data-id="bw7" data-paths="down_custintel">Blackwood Seven</div>
+</div>
+</div></div>
+
+<div class="arrow-col" id="arr1"><div class="arr">›</div><div class="arr">›</div><div class="arr">›</div></div>
+
+<!-- BRONZE -->
+<div class="lane l-bronze">
+<div class="lane-hdr">Bronze (Landing → STD)</div>
+<div class="lane-body">
+<div class="group"><div class="group-title">Landing</div>
+<div class="node n-bronze" data-id="bz_dc_policy" data-paths="bz_std_dc_policy,rv_dc_policy,bv_policy,gold_policy_fdn,gold_policy_rem,gold_automation,gold_actuarial,gold_fraud">BZ_DC_Policy</div>
+<div class="node n-bronze" data-id="bz_dc_quotes" data-paths="bz_std_dc_quotes,rv_dc_quotes,bv_quotes,gold_pricing_fdn,gold_pricing,gold_cape,gold_sfmc">BZ_DC_Quotes</div>
+<div class="node n-bronze" data-id="bz_dc_billing" data-paths="rv_dc_billing,bv_billing,gold_opex,gold_enlighten,gold_tax">BZ_DC_Billing</div>
+<div class="node n-bronze" data-id="bz_dc_earnings" data-paths="bz_std_dc_earnings,rv_earnings,rv_ceded,rv_unceded">BZ_DC_Earnings</div>
+<div class="node n-bronze" data-id="bz_dc_party" data-paths="rv_dc_party,rv_dc_address,bv_customer,bv_address,gold_cust_fdn">BZ_DC_Party</div>
+<div class="node n-bronze" data-id="bz_dc_bal" data-paths="">BZ_DC_Balance&Control</div>
+<div class="node n-bronze" data-id="bz_cmdm" data-paths="rv_cmdm,bv_customer,bv_c2p,gold_cust_fdn">BZ_CMDM</div>
+<div class="node n-bronze" data-id="bz_cmdm_mp" data-paths="bz_std_cmdm_mp,rv_cmdm_addr,bv_address">BZ_CMDM_MemberParty</div>
+<div class="node n-bronze" data-id="bz_rdm" data-paths="bz_std_rdm">BZ_RDM</div>
+<div class="node n-bronze" data-id="bz_cref" data-paths="bz_std_cref">BZ_Central_Ref</div>
+<div class="node n-bronze" data-id="bz_protect" data-paths="bz_std_protect,rv_prt_billing,rv_prt_party,rv_prt_addr,rv_prt_products">BZ_Protect</div>
+<div class="node n-bronze" data-id="bz_nurv" data-paths="bz_std_nurv,pv_nurv">BZ_Nurv_TSI</div>
+<div class="node n-bronze" data-id="bz_finity" data-paths="">BZ_Finity</div>
+<div class="node n-bronze" data-id="bz_adobe" data-paths="rv_aa_gen">BZ_Adobe_Analytics_GQ</div>
+<div class="node n-bronze" data-id="bz_dbx_claims" data-paths="bz_std_dbx_claims">BZ_DBX_Claims</div>
+<div class="node n-bronze" data-id="bz_dbx_cust" data-paths="bz_std_dbx_cust">BZ_DBX_Customer</div>
+<div class="node n-bronze" data-id="bz_dbx_ddo" data-paths="bz_std_dbx_ddo">BZ_DBX_DDO</div>
+</div>
+<div class="group"><div class="group-title">Standardised</div>
+<div class="node n-bronze" data-id="bz_std_dc_policy" data-paths="rv_dc_policy,bv_policy">BZ_STD_DC_Policy</div>
+<div class="node n-bronze" data-id="bz_std_dc_quotes" data-paths="rv_dc_quotes,bv_quotes">BZ_STD_DC_Quotes</div>
+<div class="node n-bronze" data-id="bz_std_dc_earnings" data-paths="rv_earnings,rv_ceded,rv_unceded">BZ_STD_DC_Earnings_AU / _NZ</div>
+<div class="node n-bronze" data-id="bz_std_cmdm_mp" data-paths="rv_cmdm_addr,bv_address">BZ_CMDM_Member_Party (STD)</div>
+<div class="node n-bronze" data-id="bz_std_rdm" data-paths="">BZ_STD_RDM</div>
+<div class="node n-bronze" data-id="bz_std_cref" data-paths="">BZ_STD_Central_Ref</div>
+<div class="node n-bronze" data-id="bz_std_protect" data-paths="rv_prt_billing,rv_prt_party,rv_prt_addr,rv_prt_products">BZ_STD_Protect</div>
+<div class="node n-bronze" data-id="bz_std_nurv" data-paths="pv_nurv">BZ_STD_Nurv_TSI</div>
+<div class="node n-bronze" data-id="bz_std_dbx_claims" data-paths="">BZ_DBX_STD_Claims</div>
+<div class="node n-bronze" data-id="bz_std_dbx_cust" data-paths="">BZ_DBX_STD_Customer</div>
+<div class="node n-bronze" data-id="bz_std_dbx_ddo" data-paths="">BZ_DBX_STD_DDO</div>
+</div>
+</div></div>
+
+<div class="arrow-col" id="arr2"><div class="arr">›</div><div class="arr">›</div><div class="arr">›</div></div>
+
+<!-- SILVER -->
+<div class="lane l-silver">
+<div class="lane-hdr">Silver (Data Vault)</div>
+<div class="lane-body">
+<div class="group"><div class="group-title">Raw Vault</div>
+<div class="node n-silver" data-id="rv_dc_policy" data-paths="bv_policy,gold_policy_fdn">RV_DC_Policy</div>
+<div class="node n-silver" data-id="rv_dc_quotes" data-paths="bv_quotes,gold_pricing_fdn">RV_DC_Quotes</div>
+<div class="node n-silver" data-id="rv_dc_billing" data-paths="bv_billing">RV_DC_Billing</div>
+<div class="node n-silver" data-id="rv_dc_party" data-paths="bv_customer,gold_cust_fdn">RV_DC_Party</div>
+<div class="node n-silver" data-id="rv_dc_address" data-paths="bv_address">RV_DC_Address</div>
+<div class="node n-silver" data-id="rv_dc_products" data-paths="bv_products">RV_DC_Products</div>
+<div class="node n-silver" data-id="rv_prt_billing" data-paths="">RV_Protect_Billing</div>
+<div class="node n-silver" data-id="rv_prt_party" data-paths="bv_customer">RV_PRT_Party</div>
+<div class="node n-silver" data-id="rv_prt_addr" data-paths="bv_address">RV_PRT_Address</div>
+<div class="node n-silver" data-id="rv_prt_products" data-paths="bv_products">RV_Protect_Products</div>
+<div class="node n-silver" data-id="rv_cmdm" data-paths="bv_customer,bv_c2p">RV_CMDM</div>
+<div class="node n-silver" data-id="rv_cmdm_addr" data-paths="bv_address">RV_CMDM_Address</div>
+<div class="node n-silver" data-id="rv_aa_gen" data-paths="">RV_AA_GenQuotes</div>
+<div class="node n-silver" data-id="rv_earnings" data-paths="">RV_Earnings</div>
+<div class="node n-silver" data-id="rv_ceded" data-paths="">RV_Ceded_Premiums</div>
+<div class="node n-silver" data-id="rv_unceded" data-paths="">RV_UnCeded_Premiums</div>
+<div class="node n-silver" data-id="nv_risk" data-paths="gold_policy_rem">NV_Policy_Risk</div>
+</div>
+<div class="group"><div class="group-title">Business Vault</div>
+<div class="node n-silver" data-id="bv_policy" data-paths="gold_policy_fdn">BV Policy</div>
+<div class="node n-silver" data-id="bv_quotes" data-paths="gold_pricing_fdn">BV Quotes</div>
+<div class="node n-silver" data-id="bv_billing" data-paths="">BV_BillingMetrics</div>
+<div class="node n-silver" data-id="bv_customer" data-paths="gold_cust_fdn">BV_Customer</div>
+<div class="node n-silver" data-id="bv_address" data-paths="gold_cust_fdn">BV_Address</div>
+<div class="node n-silver" data-id="bv_products" data-paths="">BV_Products</div>
+<div class="node n-silver" data-id="bv_c2p" data-paths="gold_cust_fdn">BV C2P</div>
+<div class="node n-silver" data-id="pv_nurv" data-paths="">PV_Nurv_Products</div>
+</div>
+</div></div>
+
+<div class="arrow-col" id="arr3"><div class="arr">›</div><div class="arr">›</div><div class="arr">›</div></div>
+
+<!-- GOLD -->
+<div class="lane l-gold">
+<div class="lane-hdr">Gold (Foundation + R2 Assets)</div>
+<div class="lane-body">
+<div class="group"><div class="group-title">Foundation</div>
+<div class="node n-gold" data-id="gold_policy_fdn" data-paths="">Policy Foundation Layer</div>
+<div class="node n-gold" data-id="gold_pricing_fdn" data-paths="">Pricing Foundation Layer</div>
+<div class="node n-gold" data-id="gold_cust_fdn" data-paths="">Customer/Party Foundation Layer</div>
+</div>
+<div class="group"><div class="group-title">Customer (CVM: David Goodes)</div>
+<div class="node n-gold" data-id="gold_cust_rel" data-squad="stanlee" data-cvm="goodes" data-up="gold_cust_fdn,bv_customer,bv_c2p,bv_address,rv_cmdm,rv_dc_party" data-paths="down_custintel,down_compliance,down_marketing"><span class="cead">A-007725</span> Customer Relationship Insights <span class="tag t-stanlee">StanLee</span></div>
+<div class="node n-gold" data-id="gold_cust_fdn_insights" data-squad="stanlee" data-cvm="goodes" data-up="gold_cust_fdn,bv_customer,bv_address,bv_c2p,rv_cmdm,rv_dc_party" data-paths="down_marketing,down_custintel"><span class="cead">A-007295</span> Customer Foundation Insights <span class="tag t-stanlee">StanLee</span></div>
+<div class="node n-gold" data-id="gold_policy_rem" data-squad="wade" data-cvm="goodes" data-up="gold_policy_fdn,bv_policy,rv_dc_policy,nv_risk" data-paths="down_bi,down_compliance,down_coex,down_claims"><span class="cead">A-007616</span> Policy Remediation Insights <span class="tag t-wade">Wade</span></div>
+</div>
+<div class="group"><div class="group-title">Corporate Services (CVM: Steven Farrugia)</div>
+<div class="node n-gold" data-id="gold_actuarial" data-squad="odin" data-cvm="farrugia" data-up="gold_policy_fdn,bv_policy,bv_billing,rv_dc_policy,rv_dc_billing" data-paths="down_actuarial"><span class="cead">A-007484</span> Finance Actuarial Insights <span class="tag t-odin">Odin</span></div>
+<div class="node n-gold" data-id="gold_automation" data-squad="odin" data-cvm="farrugia" data-up="gold_policy_fdn,bv_policy,rv_dc_policy" data-paths="down_bots"><span class="cead">A-007504</span> Automation Insights <span class="tag t-odin">Odin</span></div>
+<div class="node n-gold" data-id="gold_opex" data-squad="odin" data-cvm="farrugia" data-up="bv_policy,bv_billing,rv_dc_policy,rv_dc_billing" data-paths="down_bi,down_compliance"><span class="cead">A-007411</span> Operational Excellence Insights <span class="tag t-odin">Odin</span></div>
+<div class="node n-gold" data-id="gold_enlighten" data-squad="odin" data-cvm="farrugia" data-up="bv_policy,bv_billing,rv_dc_policy,rv_dc_billing" data-paths="down_enlighten"><span class="cead">A-007412</span> Enlighten OpEx Extracts <span class="tag t-odin">Odin</span></div>
+<div class="node n-gold" data-id="gold_fraud" data-squad="odin" data-cvm="farrugia" data-up="gold_policy_fdn,bv_policy,rv_dc_policy" data-paths="down_fraud"><span class="cead">A-007479</span> Internal Fraud Extracts <span class="tag t-odin">Odin</span></div>
+<div class="node n-gold" data-id="gold_tax" data-squad="odin" data-cvm="farrugia" data-up="bv_policy,bv_billing,rv_dc_policy,rv_dc_billing" data-paths="down_tax"><span class="cead">A-007696</span> Finance Tax Extracts <span class="tag t-odin">Odin</span></div>
+</div>
+<div class="group"><div class="group-title">Pricing (CVM: David Goodes)</div>
+<div class="node n-gold" data-id="gold_pricing" data-squad="rogue" data-cvm="goodes" data-up="gold_pricing_fdn,bv_quotes,bv_policy,rv_dc_quotes,rv_dc_policy" data-paths="down_pricing"><span class="cead">A-007472</span> Pricing Foundation Insights <span class="tag t-rogue">Rogue</span></div>
+<div class="node n-gold" data-id="gold_cape" data-squad="rogue" data-cvm="goodes" data-up="gold_pricing_fdn,bv_quotes,rv_dc_quotes" data-paths="down_pricing"><span class="cead">A-007704</span> Live Pricing CaPE <span class="tag t-rogue">Rogue</span></div>
+<div class="node n-gold" data-id="gold_aainz" data-up="bv_customer" data-paths="down_aainz"><span class="cead">A-007748</span> Customer AAINZ Extracts</div>
+<div class="node n-gold" data-id="gold_sfmc" data-up="bv_quotes,rv_dc_quotes" data-paths="down_sfmc"><span class="cead">A-007870</span> Quote Trigger SFMC</div>
+</div>
+<div class="group"><div class="group-title">Descoped from R2</div>
+<div class="node n-descoped" data-id="desc1"><span class="cead">A-007597</span> Commercial Portfolio Insights</div>
+<div class="node n-descoped" data-id="desc2"><span class="cead">A-007644</span> Commercial Performance Insights</div>
+<div class="node n-descoped" data-id="desc3"><span class="cead">A-007598</span> Commercial Portfolio Regulatory</div>
+</div>
+</div></div>
+
+<div class="arrow-col" id="arr4"><div class="arr">›</div><div class="arr">›</div><div class="arr">›</div></div>
+
+<!-- DOWNSTREAM -->
+<div class="lane l-down">
+<div class="lane-hdr">Downstream Consumers</div>
+<div class="lane-body">
+<div class="group"><div class="group-title">Automation Bots</div>
+<div class="node n-down" data-id="down_bots" data-paths="">Jarvis · Sherlock · EcoBot · Buzz · Rico · Balto · Smart PD</div></div>
+<div class="group"><div class="group-title">Pricing Engine</div>
+<div class="node n-down" data-id="down_pricing" data-paths="">Live Pricing (SYON) · CaPE APIs</div></div>
+<div class="group"><div class="group-title">Marketing & Campaigns</div>
+<div class="node n-down" data-id="down_marketing" data-paths="">Unica · DDM · CPP · NBA</div>
+<div class="node n-down" data-id="down_sfmc" data-paths="">Salesforce Marketing Cloud</div></div>
+<div class="group"><div class="group-title">BI & Reporting</div>
+<div class="node n-down" data-id="down_bi" data-paths="">Insurance Perf · Reconciliation · PANDA · DIMS</div></div>
+<div class="group"><div class="group-title">Actuarial</div>
+<div class="node n-down" data-id="down_actuarial" data-paths="">SAS Actuarial Models · Finity</div></div>
+<div class="group"><div class="group-title">Claims & Fraud</div>
+<div class="node n-down" data-id="down_claims" data-paths="">Claims Processing</div>
+<div class="node n-down" data-id="down_fraud" data-paths="">Internal Fraud (Instinct)</div></div>
+<div class="group"><div class="group-title">Compliance</div>
+<div class="node n-down" data-id="down_compliance" data-paths="">Customer Remediation · DDO · Enterprise Complaints</div>
+<div class="node n-down" data-id="down_ddo" data-paths="">DDO Compliance</div></div>
+<div class="group"><div class="group-title">Customer Intelligence</div>
+<div class="node n-down" data-id="down_custintel" data-paths="">Group Analytics · CMDM Downstream · CCIP</div></div>
+<div class="group"><div class="group-title">Enlighten</div>
+<div class="node n-down" data-id="down_enlighten" data-paths="">Enlighten Workforce Management</div></div>
+<div class="group"><div class="group-title">Finance</div>
+<div class="node n-down" data-id="down_tax" data-paths="">Finance Tax Reporting</div></div>
+<div class="group"><div class="group-title">AAI NZ</div>
+<div class="node n-down" data-id="down_aainz" data-paths="">AAI NZ Extracts (Billing, Policy, Quotes, Earnings)</div></div>
+<div class="group"><div class="group-title">Co-existence Legacy</div>
+<div class="node n-down" data-id="down_coex" data-paths="">Customer Layer · Unica · CPA · Redshift · ORCA</div></div>
+</div></div>
+
+</div>
+
+<div class="info-panel" id="infoPanel">
+<span class="close-btn" onclick="clearTrace()">✕</span>
+<div>
+<h3 id="infoTitle"></h3>
+<div class="path" id="infoPath"></div>
+</div>
+<div class="info-details" id="infoDetails"></div>
+</div>
+
+<script>
+const nodes=document.querySelectorAll('.node');
+const arrows=document.querySelectorAll('.arrow-col');
+const panel=document.getElementById('infoPanel');
+
+nodes.forEach(n=>{n.addEventListener('click',()=>traceNode(n))});
+
+function selectGold(goldId){
+  const el=document.querySelector(`[data-id="${goldId}"]`);
+  if(el){
+    traceNode(el);
+    el.scrollIntoView({behavior:'smooth',block:'center',inline:'center'});
+  }
+}
+
+let traceMode='impact';
+function setMode(m){
+  traceMode=m;
+  document.getElementById('btnImpact').classList.toggle('active',m==='impact');
+  document.getElementById('btnLineage').classList.toggle('active',m==='lineage');
+  clearTrace();
+}
+
+function traceNode(el){
+  clearTrace();
+  const id=el.dataset.id;
+  const directPaths=(el.dataset.paths||'').split(',').filter(Boolean);
+  const upPaths=(el.dataset.up||'').split(',').filter(Boolean);
+  const allIds=new Set([id,...directPaths,...upPaths]);
+
+  if(traceMode==='impact'){
+    // IMPACT MODE: Show all assets affected by shared upstream dependencies
+    // Walk upstream recursively
+    function addUpstreamImpact(targetId){
+      nodes.forEach(n=>{
+        const np=(n.dataset.paths||'').split(',').filter(Boolean);
+        if(np.includes(targetId)&&!allIds.has(n.dataset.id)){
+          allIds.add(n.dataset.id);
+          addUpstreamImpact(n.dataset.id);
+        }
+      });
+    }
+    addUpstreamImpact(id);
+    // Also show siblings: anything that shares an upstream node
+    const upstreamIds=new Set([...upPaths]);
+    nodes.forEach(n=>{
+      const nup=(n.dataset.up||'').split(',').filter(Boolean);
+      if(nup.some(u=>upstreamIds.has(u))){
+        allIds.add(n.dataset.id);
+        const np=(n.dataset.paths||'').split(',').filter(Boolean);
+        np.forEach(p=>allIds.add(p));
+      }
+    });
+  } else {
+    // LINEAGE MODE: Only direct upstream and downstream for this one asset
+    function addUpstreamDirect(targetId){
+      nodes.forEach(n=>{
+        const np=(n.dataset.paths||'').split(',').filter(Boolean);
+        if(np.includes(targetId)&&!allIds.has(n.dataset.id)){
+          allIds.add(n.dataset.id);
+          addUpstreamDirect(n.dataset.id);
+        }
+      });
+    }
+    upPaths.forEach(u=>{allIds.add(u);addUpstreamDirect(u)});
+  }
+
+  nodes.forEach(n=>{
+    if(allIds.has(n.dataset.id)){n.classList.add('highlighted')}
+    else{n.classList.add('dimmed')}
+  });
+  arrows.forEach(a=>a.classList.add('highlighted'));
+
+  // Show info panel
+  const title=el.textContent.trim();
+  document.getElementById('infoTitle').textContent=title;
+  const pathDiv=document.getElementById('infoPath');
+  pathDiv.innerHTML='';
+  const colors={source:'var(--source)',bronze:'var(--bronze)',silver:'var(--silver)',gold:'var(--gold)',down:'var(--teal)'};
+  const highlighted=[...document.querySelectorAll('.node.highlighted')];
+  const lanes=['l-source','l-bronze','l-silver','l-gold','l-down'];
+  lanes.forEach((l,i)=>{
+    const inLane=highlighted.filter(h=>h.closest('.'+l));
+    if(inLane.length){
+      if(i>0)pathDiv.innerHTML+='<span class="path-arrow">→</span>';
+      inLane.forEach(h=>{
+        const c=Object.values(colors)[i];
+        pathDiv.innerHTML+=`<span class="path-node" style="background:${c};color:#fff">${h.textContent.trim().substring(0,30)}</span>`;
+      });
+    }
+  });
+  panel.classList.add('visible');
+}
+
+function clearTrace(){
+  nodes.forEach(n=>{n.classList.remove('highlighted','dimmed')});
+  arrows.forEach(a=>a.classList.remove('highlighted'));
+  panel.classList.remove('visible');
+  document.querySelectorAll('.btn.active').forEach(b=>b.classList.remove('active'));
+}
+
+function filterSquad(squad){
+  clearTrace();
+  if(squad==='all')return;
+  nodes.forEach(n=>{
+    const s=n.dataset.squad;
+    if(n.closest('.l-gold')&&s&&s!==squad){n.classList.add('dimmed')}
+    else if(n.closest('.l-gold')&&s===squad){n.classList.add('highlighted');
+      const paths=(n.dataset.paths||'').split(',').filter(Boolean);
+      paths.forEach(p=>{const t=document.querySelector(`[data-id="${p}"]`);if(t)t.classList.add('highlighted')});
+    }
+  });
+  // Dim non-highlighted downstream
+  document.querySelectorAll('.l-down .node:not(.highlighted)').forEach(n=>n.classList.add('dimmed'));
+}
+
+function filterCVM(cvm){
+  clearTrace();
+  if(cvm==='all')return;
+  nodes.forEach(n=>{
+    const c=n.dataset.cvm;
+    if(n.closest('.l-gold')&&c&&c!==cvm){n.classList.add('dimmed')}
+    else if(n.closest('.l-gold')&&c===cvm){n.classList.add('highlighted');
+      const paths=(n.dataset.paths||'').split(',').filter(Boolean);
+      paths.forEach(p=>{const t=document.querySelector(`[data-id="${p}"]`);if(t)t.classList.add('highlighted')});
+    }
+  });
+  document.querySelectorAll('.l-down .node:not(.highlighted)').forEach(n=>n.classList.add('dimmed'));
+}
+
+// ============ REQUIREMENTS PANEL ============
+const AD={
+gold_automation:{cead:'A-007504',name:'SDS Automation - Insights',squad:'Odin',sqcls:'t-odin',cvm:'Steven Farrugia',owner:'Brenda Curran',tech:'BATRA, Mohit',lead:'Melanie Latimer',
+sad:{n:'Automation Insights Transition State SAD',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1581909179'},
+irt:{n:'Corp Services - Automation - G1',u:'https://confluence.suncorp.app/confluence/display/DISPACE/Corporate+Services+-+Automation+-+DI+IRT+-+Group+1'},
+init:{n:'DGIN-158764',u:'https://jira.suncorp.app/jira/browse/DGIN-158764'},
+conf:'Confirmed',
+epics:[{k:'DGIN-54419',n:'IRT - Corp Services - Automation - Grp1',f:15,nf:1,conf:'confirmed',linked:'—',
+reqs:['Provision Duck Creek policy data for Jarvis bot','Create billing data extract for Buzz workflow','Data refresh scheduling for bot feeds','Data validation rules for bot input quality','Error handling for failed extracts','Bot input schema definition','Historical data backfill specification','Data lineage documentation','Access control for bot service accounts','Monitoring alerts for data freshness','Reconciliation between source and extract','Policy data for EcoBot','Policy data for Rico','Policy data for Balto','Policy data for Smart PD','Batch processing SLA (4-hour window)']}]},
+gold_actuarial:{cead:'A-007484',name:'SDS Finance Actuarial - Insights',squad:'Odin',sqcls:'t-odin',cvm:'Steven Farrugia',owner:'Petar Bubulj',tech:'BATRA, Mohit',lead:'Melanie Latimer',
+sad:{n:'Finance R2 Actuaries Solution Overview',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1273646949'},
+irt:{n:'Corp Services - Actuarial - G1, G2',u:'https://confluence.suncorp.app/confluence/display/DISPACE/Corporate+Services+-+Actuarial+-+DI+IRT+-+Group+1'},
+init:{n:'DGIN-158542',u:'https://jira.suncorp.app/jira/browse/DGIN-158542'},
+conf:'Confirmed',
+epics:[
+{k:'DGIN-114162',n:'Net Zero Emissions Reporting - Group 1',f:4,nf:0,conf:'confirmed',linked:'⚠️ Tagged Wade, mapped Odin',reqs:['Net Zero Emissions data extract','Carbon emissions calculation inputs','ESG reporting data feed','Net Zero regulatory submission data']},
+{k:'DGIN-141074',n:'CORPORATE FINANCE R2 - ACTUARIAL',f:18,nf:0,conf:'confirmed',linked:'—',reqs:['SAS actuarial layer provision','Monthly valuation data feed','Premium data for reserving','Claims triangle data','Policy in-force data','Earned premium calculations','Unearned premium reserve data','IBNR estimation inputs','Risk margin calculation data','Discount rate application data','Liability adequacy test data','Reinsurance recoveries data','Capital adequacy reporting','APRA reporting data feed','Actuarial assumption data','Experience study data','Profit margin analysis data','Valuation roll-forward data']},
+{k:'DGIN-141076',n:'CORPORATE FINANCE R2 - RISK',f:6,nf:0,conf:'confirmed',linked:'—',reqs:['Risk appetite framework data','Risk exposure calculations','Concentration risk data','Catastrophe risk modelling inputs','Operational risk metrics','Risk-adjusted return calculations']},
+{k:'DGIN-89571',n:'Capital Management & Reinsurance - Group 1',f:8,nf:4,conf:'confirmed',linked:'—',reqs:['Capital management dashboard data','Reinsurance treaty data','Cyclone pool allocation data','Natural hazard exposure data','Capital adequacy ratio inputs','Stress testing scenario data','Regulatory capital calculations','Board reporting data feed','Data latency SLA','Calculation precision requirements','Audit trail retention','Disaster recovery requirements']}]},
+gold_policy_rem:{cead:'A-007616',name:'SDS - Policy Remediation Insights',squad:'Wade',sqcls:'t-wade',cvm:'David Goodes',owner:'Petar Bubulj',tech:'CIANCIO, Daniel',lead:'Duong Dang',
+sad:{n:'Policy Remediation Insights SAD',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1616466790'},
+irt:{n:'Multiple IRTs',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1323888052'},
+init:{n:'DGIN-211655, DGIN-198993, DGIN-89131',u:'https://jira.suncorp.app/jira/browse/DGIN-211655'},
+conf:'Confirmed',
+epics:[
+{k:'DGIN-116960',n:'Customer Service QA - Group 1b',f:6,nf:0,conf:'confirmed',linked:'—',reqs:['QA scorecard data','QA sampling rules','Agent performance metrics','Call quality assessment data','Complaint resolution tracking','Service level adherence']},
+{k:'DGIN-117075',n:'Cust Service Perf and Operational Data - 1b',f:11,nf:0,conf:'confirmed',linked:'—',reqs:['Contact centre volume data','Average handle time reporting','First call resolution data','Escalation tracking','Channel performance data','Digital self-service metrics','IVR completion rates','Agent availability data','Queue wait time reporting','Customer satisfaction scores','Operational metrics dashboard']},
+{k:'DGIN-67339',n:'Cust Service Perf and Operational Data - G1',f:17,nf:3,conf:'confirmed',linked:'—',reqs:['Consumer policy performance data','Portfolio performance metrics','DDO reporting data','APRA submission data feed','Regulatory compliance extracts','Policy in-force reporting','New business volumes','Renewal rates tracking','Lapse and cancellation data','Claims frequency data','Claims severity data','Loss ratio calculations','Combined ratio reporting','Premium adequacy data','Pricing performance feedback','Geographic distribution data','Product mix analysis','Data freshness SLA','Report generation performance','Concurrent user capacity']},
+{k:'DGIN-67343',n:'Customer Service QA - Group 1',f:5,nf:0,conf:'confirmed',linked:'—',reqs:['QA rule configuration data','Quality audit trail','Calibration session data','QA exception reporting','Remediation action tracking']}]},
+gold_cust_rel:{cead:'A-007725',name:'SDS Customer - Relationship Insights',squad:'StanLee',sqcls:'t-stanlee',cvm:'David Goodes',owner:'Sherry Simpson',tech:'S, Arun',lead:'Vasantha Dommeti',
+sad:{n:'Customer Data DI R2 Coexistence Solution Architecture',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1405579244'},
+irt:{n:'Data Coexistence Initiative Requirements - Group 1',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1323888052'},
+init:{n:'DGIN-162938, DGIN-162939',u:'https://jira.suncorp.app/jira/browse/DGIN-162939'},
+conf:'Mixed',
+epics:[
+{k:'DGIN-105996',n:'Customer Data R2 - 1:1 Enablement',f:8,nf:2,conf:'confirmed',linked:'—',reqs:['Customer segmentation data','1:1 marketing propensity scores','Customer lifetime value data','Next best offer inputs','Campaign response tracking','Customer preference data','Channel affinity data','Contact history consolidation','Data quality SLA','Real-time scoring performance']},
+{k:'DGIN-106003',n:'Customer Data R2 - Customer Insights',f:29,nf:2,conf:'multi',linked:'Shared with Customer Foundation',reqs:['Customer golden record','C2P relationship mapping','Customer demographics','Contact information standardisation','Identity resolution','Household grouping','Customer risk profile','Product holding summary','Policy history consolidation','Claims history per customer','Billing relationship data','Customer communication preferences','Privacy consent tracking','Customer value scoring','Retention risk indicators','Cross-sell propensity','Customer journey data','Interaction history','Complaint history per customer','Customer satisfaction data','NPS scoring inputs','Customer lifecycle stage','Onboarding status tracking','Renewal propensity','Lapse prediction inputs','Customer profitability data','Segment classification','Brand affinity data','Geographic profiling','Data quality framework','Refresh latency SLA']},
+{k:'DGIN-106007',n:'Customer Data R2 - MPSC',f:1,nf:0,conf:'confirmed',linked:'—',reqs:['MPSC customer linkage data']},
+{k:'DGIN-106012',n:'Customer Data R2 - Marketing Ops',f:8,nf:3,conf:'multi',linked:'Shared with Unica',reqs:['Campaign audience data','Marketing suppression lists','Opt-out management data','Campaign calendar data','Offer eligibility rules','Response attribution data','Channel allocation data','Marketing ROI inputs','Campaign data latency SLA','Audience refresh performance','Data privacy compliance']},
+{k:'DGIN-106013',n:'Customer Data R2 - Marketing 1:1 Strategies',f:5,nf:0,conf:'confirmed',linked:'—',reqs:['Personalisation context data','Trigger event definitions','Real-time decisioning inputs','Content recommendation data','A/B testing allocation data']}]},
+gold_cust_fdn_insights:{cead:'A-007295',name:'Databricks - Customer Foundation Insights',squad:'StanLee',sqcls:'t-stanlee',cvm:'David Goodes',owner:'Sherry Simpson',tech:'S, Arun',lead:'Vasantha Dommeti',
+sad:{n:'Customer Data DI R2 Coexistence Solution Architecture',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1405579244'},
+irt:{n:'Data Coexistence Initiative Requirements - Group 1',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1323888052'},
+init:{n:'DGIN-162938',u:'https://jira.suncorp.app/jira/browse/DGIN-162938'},
+conf:'Mixed',
+epics:[
+{k:'DGIN-105999',n:'Customer Data R2 - Data Enablement',f:24,nf:2,conf:'confirmed',linked:'—',reqs:['Customer master data consolidation','Address standardisation engine','Name matching and dedup','Customer ID resolution','Protect-to-DC customer mapping','CMDM integration layer','Party role classification','Customer status tracking','Contact method standardisation','Email validation','Phone number standardisation','Postal address geocoding','Customer merge/unmerge logic','Golden record arbitration rules','Source system priority rules','Data currency tracking','Customer data quality scores','Completeness metrics','Accuracy validation rules','Timeliness monitoring','Customer data lineage','Change data capture for customer','Audit trail for customer changes','Historical customer snapshots','Data enablement latency SLA','Customer data quality SLA']},
+{k:'DGIN-106000',n:'Customer Data R2 - Marketing Science',f:5,nf:3,conf:'confirmed',linked:'—',reqs:['Marketing analytics dataset','Customer behaviour features','Propensity model inputs','Attribution modelling data','Lookalike audience data','Model training data latency','Feature store refresh SLA','Data sampling accuracy']},
+{k:'DGIN-106002',n:'Customer Data R2 - Data Science Capabilities',f:16,nf:2,conf:'confirmed',linked:'—',reqs:['Feature engineering dataset','Customer event stream','Behavioural signals data','Churn prediction features','CLV model features','Risk scoring features','Fraud indicator features','Cross-sell model features','Real-time feature serving','Batch feature computation','Feature versioning','Model monitoring data','A/B test allocation data','Experiment tracking data','Model performance metrics','Feature drift detection','Feature computation SLA','Model serving latency SLA']},
+{k:'DGIN-106003',n:'Customer Data R2 - Customer Insights',f:29,nf:2,conf:'multi',linked:'Shared with Customer Relationship',reqs:['Customer golden record (DIMS)','C2P relationship mapping','Customer demographics consolidation','Contact standardisation','Identity resolution service','Household grouping logic','Customer risk profile','Product holding summary','Policy history consolidation','Claims history per customer','Billing relationship data','Communication preferences','Privacy consent tracking','Customer value scoring','Retention risk indicators','Cross-sell propensity scores','Customer journey data','Interaction history','Complaint history per customer','Customer satisfaction data','NPS scoring inputs','Customer lifecycle stage','Onboarding status tracking','Renewal propensity','Lapse prediction inputs','Customer profitability data','Segment classification','Brand affinity data','Geographic profiling','Data quality framework','Refresh latency SLA']},
+{k:'DGIN-106004',n:'Customer Data R2 - Partnership Data',f:3,nf:0,conf:'confirmed',linked:'—',reqs:['Partner customer matching','Joint product holding data','Partnership referral tracking']},
+{k:'DGIN-106008',n:'Customer Data R2 - Pricing',f:1,nf:0,conf:'confirmed',linked:'—',reqs:['Customer pricing history data']}]},
+gold_opex:{cead:'A-007411',name:'SDS Operational Excellence Insights',squad:'Odin',sqcls:'t-odin',cvm:'Steven Farrugia',owner:'Sushma Suresh',tech:'BATRA, Mohit',lead:'Melanie Latimer',
+sad:{n:'Insurance Operations Insights Transition State SAD',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1500188074'},
+irt:{n:'Corp Services - Operations - G1, G1b',u:'https://confluence.suncorp.app/confluence/display/DISPACE/Corporate+Services+-+Operations+-+DI+IRT+-+Group+1'},
+init:{n:'DGIN-158541',u:'https://jira.suncorp.app/jira/browse/DGIN-158541'},
+conf:'Mixed',
+epics:[
+{k:'DGIN-115822',n:'Insurance Operations - Group 1b',f:3,nf:0,conf:'multi',linked:'Shared with Enlighten',reqs:['Enlighten operational data feed','Workforce productivity metrics','Operational KPI dashboard data']},
+{k:'DGIN-141078',n:'CORPORATE FINANCE R2 - ADVOCACY - COMPLAINTS',f:7,nf:0,conf:'confirmed',linked:'—',reqs:['Complaint volume tracking','Complaint resolution times','Complaint category analysis','Regulatory complaint reporting','Complaint escalation data','Root cause analysis data','Complaint trend analysis']},
+{k:'DGIN-141079',n:'CORPORATE FINANCE R2 - ADVOCACY - CEV (GROUP)',f:13,nf:0,conf:'confirmed',linked:'—',reqs:['Customer estimated value data','CEV calculation inputs','CEV segment analysis','CEV trend reporting','Customer value distribution','Value-based segmentation','CEV by product line','CEV by channel','CEV retention impact','CEV acquisition cost','CEV lifetime projections','CEV portfolio summary','CEV regulatory reporting']},
+{k:'DGIN-141082',n:'CORPORATE FINANCE R2 - COMPLIANCE',f:4,nf:0,conf:'confirmed',linked:'—',reqs:['Compliance monitoring data','Regulatory obligation tracking','Compliance exception reporting','Audit readiness data']},
+{k:'DGIN-141083',n:'CORPORATE FINANCE R2 - INTERNAL AUDIT',f:4,nf:0,conf:'confirmed',linked:'—',reqs:['Internal audit data extract','Audit finding tracking','Control testing data','Audit trail reporting']},
+{k:'DGIN-89570',n:'Insurance Operations - Group 1',f:8,nf:3,conf:'multi',linked:'Shared with Enlighten',reqs:['Reconciliation consumer metrics','Reconciliation commercial metrics','Operational performance KPIs','Insurance operations dashboard','Claims processing metrics','Policy servicing metrics','Billing operations metrics','Exception handling data','Data freshness SLA','Dashboard performance SLA','Concurrent user capacity']}]},
+gold_enlighten:{cead:'A-007412',name:'SDS Enlighten OpEx Extracts',squad:'Odin',sqcls:'t-odin',cvm:'Steven Farrugia',owner:'Sushma Suresh',tech:'BATRA, Mohit',lead:'Melanie Latimer',
+sad:{n:'Insurance Operations Insights Transition State SAD',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1500188074'},
+irt:{n:'Corp Services - Operations - G1, G1b',u:'https://confluence.suncorp.app/confluence/display/DISPACE/Corporate+Services+-+Operations+-+DI+IRT+-+Group+1'},
+init:{n:'DGIN-158541',u:'https://jira.suncorp.app/jira/browse/DGIN-158541'},
+conf:'Mixed',
+epics:[
+{k:'DGIN-115822',n:'Insurance Operations - Group 1b',f:3,nf:0,conf:'multi',linked:'Shared with OpEx',reqs:['Enlighten workforce data extract','Agent scheduling data','Performance benchmark data']},
+{k:'DGIN-89570',n:'Insurance Operations - Group 1',f:8,nf:3,conf:'multi',linked:'Shared with OpEx',reqs:['Enlighten productivity metrics','Call volume forecasting data','Staff utilisation data','Quality monitoring data','Training completion data','Absenteeism tracking','Workforce planning inputs','Performance management data','Extract delivery SLA','Data completeness requirement','System availability SLA']}]},
+gold_fraud:{cead:'A-007479',name:'Instinct Internal Fraud - Extracts',squad:'Odin',sqcls:'t-odin',cvm:'Steven Farrugia',owner:'Taemar Handes',tech:'BATRA, Mohit',lead:'Melanie Latimer',
+sad:{n:'Internal Fraud Transition State SAD',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1508500870'},
+irt:{n:'Corp Services - Internal Fraud - G2',u:'https://confluence.suncorp.app/confluence/display/DISPACE/Corporate+Services+-+Internal+Fraud+-+DI+IRT+-+Group+2'},
+init:{n:'DGIN-158540',u:'https://jira.suncorp.app/jira/browse/DGIN-158540'},
+conf:'Confirmed',
+epics:[{k:'DGIN-89569',n:'External Fraud - Group 1',f:8,nf:0,conf:'confirmed',linked:'—',reqs:['Internal fraud policy data extract','Fraud detection rule input data','Investigation case data feed','Suspicious transaction flagging','Employee access pattern data','Fraud loss tracking','Regulatory fraud reporting data','Instinct application data schema']}]},
+gold_tax:{cead:'A-007696',name:'SDS - Finance Tax - Extracts',squad:'Odin',sqcls:'t-odin',cvm:'Steven Farrugia',owner:'Nicole Revell',tech:'BATRA, Mohit',lead:'Melanie Latimer',
+sad:{n:'No dedicated SAD',u:''},irt:{n:'Corp Services - Actuarial - G1',u:'https://confluence.suncorp.app/confluence/display/DISPACE/Corporate+Services+-+Actuarial+-+DI+IRT+-+Group+1'},
+init:{n:'DGIN-158546',u:'https://jira.suncorp.app/jira/browse/DGIN-158546'},
+conf:'N/A',epics:[],warning:'BABOK Traceability Gap: No requirement epics mapped. Validate with Odin squad lead.'}
+};
+
+const reqPanel=document.createElement('div');
+reqPanel.className='req-panel';
+reqPanel.id='reqPanel';
+document.body.appendChild(reqPanel);
+
+function showReqPanel(assetId){
+  const a=AD[assetId];if(!a){reqPanel.classList.remove('open');return;}
+  const totalF=a.epics.reduce((s,e)=>s+e.f,0);
+  const totalNF=a.epics.reduce((s,e)=>s+e.nf,0);
+  let h=`<button class="rp-close" onclick="document.getElementById('reqPanel').classList.remove('open')">&times;</button>`;
+  h+=`<h2>${a.name}</h2>`;
+  h+=`<span class="rp-cead">${a.cead}</span><span class="rp-squad ${a.sqcls}" style="padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;margin-left:6px">${a.squad}</span>`;
+  h+=`<span style="font-size:9px;color:#888;margin-left:8px">CVM: ${a.cvm}</span>`;
+  h+=`<div class="rp-section">Stakeholders</div>`;
+  h+=`<table><tr><td style="color:#666">Service Owner</td><td>${a.owner}</td></tr>`;
+  h+=`<tr><td style="color:#666">Technical Lead</td><td>${a.tech}</td></tr>`;
+  h+=`<tr><td style="color:#666">Delivery Lead</td><td>${a.lead}</td></tr></table>`;
+  h+=`<div class="rp-section">Traceability Links</div>`;
+  h+=`<table>`;
+  if(a.sad.u)h+=`<tr><td style="color:#666">SAD</td><td><a href="${a.sad.u}" target="_blank">${a.sad.n}</a></td></tr>`;
+  else h+=`<tr><td style="color:#666">SAD</td><td style="color:#E74C3C">${a.sad.n}</td></tr>`;
+  h+=`<tr><td style="color:#666">IRT</td><td><a href="${a.irt.u}" target="_blank">${a.irt.n}</a></td></tr>`;
+  if(a.init.u)h+=`<tr><td style="color:#666">Initiative</td><td><a href="${a.init.u}" target="_blank">${a.init.n}</a></td></tr>`;
+  h+=`</table>`;
+  h+=`<div class="rp-section">Requirements Summary</div>`;
+  h+=`<div class="rp-summary"><div><div class="rp-summary-n gold">${totalF}</div><div class="rp-summary-l">Functional</div></div>`;
+  h+=`<div><div class="rp-summary-n" style="color:var(--stanlee)">${totalNF}</div><div class="rp-summary-l">Non-Functional</div></div>`;
+  h+=`<div><div class="rp-summary-n green">${totalF+totalNF}</div><div class="rp-summary-l">Total</div></div></div>`;
+  h+=`<div style="font-size:9px;color:#888;margin-bottom:8px">Confidence: <span class="rp-conf rp-conf-${a.conf==='Confirmed'?'confirmed':'multi'}">${a.conf}</span></div>`;
+  if(a.warning)h+=`<div style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:4px;padding:8px;margin:8px 0;font-size:9px;color:#E74C3C">⚠️ ${a.warning}</div>`;
+  h+=`<div class="rp-section">Epic Breakdown (click to expand requirements)</div>`;
+  a.epics.forEach((e,ei)=>{
+    const confCls=e.conf==='confirmed'?'rp-conf-confirmed':'rp-conf-multi';
+    h+=`<div class="rp-epic">`;
+    h+=`<div class="rp-epic-hdr" onclick="toggleReqs('${assetId}_${ei}')">`;
+    h+=`<span class="rp-epic-key"><a href="https://jira.suncorp.app/jira/browse/${e.k}" target="_blank" onclick="event.stopPropagation()">${e.k}</a></span>`;
+    h+=`<span class="rp-epic-name">${e.n}</span>`;
+    h+=`<span class="rp-epic-counts">${e.f}F | ${e.nf}NF | ${e.f+e.nf}</span>`;
+    h+=`<span class="rp-conf ${confCls}">${e.conf}</span>`;
+    if(e.linked!=='—')h+=`<span style="font-size:7px;color:#E67E22;margin-left:4px">${e.linked}</span>`;
+    h+=`</div>`;
+    h+=`<div class="rp-expand" onclick="toggleReqs('${assetId}_${ei}')">▶ Show ${e.reqs.length} requirements</div>`;
+    h+=`<div class="rp-reqs" id="reqs_${assetId}_${ei}">`;
+    h+=`<div class="scope-count" id="scopecount_${assetId}_${ei}"></div>`;
+    e.reqs.forEach((r,ri)=>{
+      const isNF=ri>=e.f;
+      const reqId=`${assetId}_${ei}_${ri}`;
+      const saved=localStorage.getItem('scope_'+reqId)||'';
+      const rowCls=saved==='in'?'scoped-in':saved==='out'?'scoped-out':'';
+      h+=`<div class="rp-req ${rowCls}" id="reqrow_${reqId}">`;
+      h+=`<span class="rp-req-key" onclick="window.open('https://jira.suncorp.app/jira/browse/${e.k}','_blank')">${e.k}-R${ri+1}</span>`;
+      h+=`<span class="rp-req-sum">${r}</span>`;
+      h+=`<span class="rp-req-type ${isNF?'rp-req-nf':'rp-req-f'}">${isNF?'NFR':'F'}</span>`;
+      h+=`<span style="display:flex;gap:3px;margin-left:4px">`;
+      h+=`<button class="scope-btn scope-in ${saved==='in'?'active':''}" onclick="setScope('${reqId}','in',${e.reqs.length},'${assetId}_${ei}')">✓</button>`;
+      h+=`<button class="scope-btn scope-out ${saved==='out'?'active':''}" onclick="setScope('${reqId}','out',${e.reqs.length},'${assetId}_${ei}')">✗</button>`;
+      h+=`</span>`;
+      h+=`</div>`;
+    });
+    h+=`</div></div>`;
+  });
+  if(a.epics.length){
+    const epicKeys=a.epics.map(e=>e.k).join(', ');
+    h+=`<div style="margin-top:12px"><a href="https://jira.suncorp.app/jira/issues/?jql=project%20%3D%20DGIN%20AND%20issuetype%20%3D%20Requirement%20AND%20%22Epic%20Link%22%20in%20(${a.epics.map(e=>e.k).join('%2C%20')})%20ORDER%20BY%20key%20ASC" target="_blank" style="font-size:9px;color:var(--teal);text-decoration:none;border:1px solid var(--teal);padding:4px 8px;border-radius:3px">View all in Jira →</a></div>`;
+  }
+  reqPanel.innerHTML=h;
+  reqPanel.classList.add('open');
+}
+
+function setScope(reqId,scope,totalReqs,epicId){
+  const current=localStorage.getItem('scope_'+reqId);
+  const newScope=(current===scope)?'':scope; // toggle off if clicking same
+  if(newScope)localStorage.setItem('scope_'+reqId,newScope);
+  else localStorage.removeItem('scope_'+reqId);
+  // Update row styling
+  const row=document.getElementById('reqrow_'+reqId);
+  if(row){
+    row.classList.remove('scoped-in','scoped-out');
+    if(newScope==='in')row.classList.add('scoped-in');
+    if(newScope==='out')row.classList.add('scoped-out');
+  }
+  // Update buttons
+  const btns=row?row.querySelectorAll('.scope-btn'):[];
+  btns.forEach(b=>{b.classList.remove('active')});
+  if(newScope&&row){
+    const activeBtn=row.querySelector('.scope-'+(newScope));
+    if(activeBtn)activeBtn.classList.add('active');
+  }
+  // Update scope counter
+  updateScopeCount(epicId);
+}
+function updateScopeCount(epicId){
+  const counter=document.getElementById('scopecount_'+epicId);
+  if(!counter)return;
+  const reqs=document.getElementById('reqs_'+epicId);
+  if(!reqs)return;
+  const rows=reqs.querySelectorAll('.rp-req');
+  let inC=0,outC=0,pendC=0;
+  rows.forEach(r=>{
+    if(r.classList.contains('scoped-in'))inC++;
+    else if(r.classList.contains('scoped-out'))outC++;
+    else pendC++;
+  });
+  counter.innerHTML=`<span class="sc-in">✓ ${inC} In Scope</span><span class="sc-out">✗ ${outC} Out of Scope</span><span class="sc-pending">? ${pendC} Pending</span>`;
+}
+function toggleReqs(id){
+  const el=document.getElementById('reqs_'+id);
+  if(el){
+    el.classList.toggle('open');
+    const expand=el.previousElementSibling;
+    if(expand)expand.textContent=el.classList.contains('open')?'▼ Hide requirements':'▶ Show requirements';
+    if(el.classList.contains('open'))updateScopeCount(id);
+  }
+}
+
+// Hook into traceNode — show panel when Gold asset clicked
+const origTrace=traceNode;
+traceNode=function(el){
+  origTrace(el);
+  const id=el.dataset.id;
+  if(id&&AD[id])showReqPanel(id);
+  else reqPanel.classList.remove('open');
+};
+// Also hook selectGold
+const origSelect=selectGold;
+selectGold=function(goldId){
+  origSelect(goldId);
+  if(AD[goldId])showReqPanel(goldId);
+};
+</script>
+</body>
+</html>
