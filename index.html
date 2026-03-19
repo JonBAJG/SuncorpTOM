@@ -203,13 +203,21 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 </div>
 </div>
 <div class="scoreboard" id="scoreboard">
-<span class="sb-title">Scope Review Progress</span>
-<div class="sb-block sb-total"><div class="sb-num" id="sbTotal">0</div><div class="sb-label">Total Reqs</div></div>
+<span class="sb-title">Scope Review</span>
+<div class="sb-block sb-total"><div class="sb-num" id="sbTotalF">0</div><div class="sb-label">Functional</div></div>
+<div class="sb-block sb-total" style="border-color:rgba(155,89,182,0.3)"><div class="sb-num" id="sbTotalNF" style="color:#9B59B6">0</div><div class="sb-label">Non-Functional</div></div>
+<div style="width:1px;height:30px;background:rgba(255,255,255,0.1);align-self:center"></div>
 <div class="sb-block sb-in"><div class="sb-num" id="sbIn">0</div><div class="sb-label">In Scope ✓</div></div>
 <div class="sb-block sb-out"><div class="sb-num" id="sbOut">0</div><div class="sb-label">Out of Scope ✗</div></div>
-<div class="sb-block sb-pending" id="sbPendingBlock"><div class="sb-num" id="sbPending">0</div><div class="sb-label">Pending → Goal: 0</div></div>
+<div class="sb-block sb-pending" id="sbPendingBlock"><div class="sb-num" id="sbPending">0</div><div class="sb-label">Pending → 0</div></div>
 <div class="sb-bar"><div class="sb-bar-track"><div class="sb-bar-in" id="sbBarIn" style="width:0%"></div><div class="sb-bar-out" id="sbBarOut" style="width:0%"></div></div><div class="sb-bar-pct" id="sbPct">0% reviewed</div></div>
 <span class="sb-trophy" id="sbTrophy">🏆</span>
+<div style="width:1px;height:30px;background:rgba(255,255,255,0.1);align-self:center"></div>
+<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+<span style="font-size:7px;color:#666;text-transform:uppercase">CVM:</span>
+<div class="sb-block" style="padding:2px 8px;border:1px solid rgba(52,152,219,0.3);border-radius:3px"><div class="sb-num" style="font-size:12px;color:var(--wade)" id="sbCvmGoodes">0</div><div class="sb-label" style="font-size:6px">Goodes</div></div>
+<div class="sb-block" style="padding:2px 8px;border:1px solid rgba(46,204,113,0.3);border-radius:3px"><div class="sb-num" style="font-size:12px;color:var(--odin)" id="sbCvmFarrugia">0</div><div class="sb-label" style="font-size:6px">Farrugia</div></div>
+</div>
 </div>
 <div class="stats" id="statsBar">
 <div class="stat" onclick="highlightLane('l-source')" style="cursor:pointer" title="Click to highlight source systems"><div class="stat-n">23</div><div class="stat-l">Sources</div></div>
@@ -222,9 +230,13 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <div style="color:var(--teal);font-size:14px;align-self:center;opacity:0.3">→</div>
 <div class="stat" onclick="highlightLane('l-down')" style="cursor:pointer;border-left:3px solid var(--teal)" title="Click to highlight downstream consumers"><div class="stat-n">44</div><div class="stat-l">Downstream</div></div>
 <div style="width:1px;height:30px;background:rgba(255,255,255,0.1);align-self:center;margin:0 8px"></div>
-<div class="stat" style="border:1px solid var(--gold);border-radius:6px;padding:6px 16px">
+<div class="stat" style="border:1px solid var(--gold);border-radius:6px;padding:6px 12px">
 <div class="stat-n" id="totalReqsStat" style="color:var(--gold)">0</div>
 <div class="stat-l">Total Requirements</div>
+<div style="display:flex;gap:8px;margin-top:2px">
+<span style="font-size:8px;color:var(--gold);font-weight:700" id="statF">0 F</span>
+<span style="font-size:8px;color:#9B59B6;font-weight:700" id="statNF">0 NF</span>
+</div>
 <div style="font-size:7px;margin-top:2px"><span style="color:#2ECC71" id="reqsMapped">0</span> mapped · <span style="color:#E74C3C" id="reqsUnmapped">0</span> unmapped</div>
 </div>
 </div>
@@ -681,22 +693,42 @@ function showReqPanel(assetId){
   h+=`<tr><td style="color:#666">IRT</td><td><a href="${a.irt.u}" target="_blank">${a.irt.n}</a></td></tr>`;
   if(a.init.u)h+=`<tr><td style="color:#666">Initiative</td><td><a href="${a.init.u}" target="_blank">${a.init.n}</a></td></tr>`;
   h+=`</table>`;
+  // Count scoped reqs for this asset
+  let assetIn=0,assetOut=0;
+  a.epics.forEach((e,ei)=>{e.reqs.forEach((r,ri)=>{
+    const v=localStorage.getItem('scope_'+assetId+'_'+ei+'_'+ri);
+    if(v==='in')assetIn++;if(v==='out')assetOut++;
+  })});
+  const assetPend=totalF+totalNF-assetIn-assetOut;
+  const assetPct=(totalF+totalNF)>0?Math.round(((assetIn+assetOut)/(totalF+totalNF))*100):0;
   h+=`<div class="rp-section">Requirements Summary</div>`;
-  h+=`<div class="rp-summary"><div><div class="rp-summary-n gold">${totalF}</div><div class="rp-summary-l">Functional</div></div>`;
-  h+=`<div><div class="rp-summary-n" style="color:var(--stanlee)">${totalNF}</div><div class="rp-summary-l">Non-Functional</div></div>`;
-  h+=`<div><div class="rp-summary-n green">${totalF+totalNF}</div><div class="rp-summary-l">Total</div></div></div>`;
-  h+=`<div style="font-size:9px;color:#888;margin-bottom:8px">Confidence: <span class="rp-conf rp-conf-${a.conf==='Confirmed'?'confirmed':'multi'}">${a.conf}</span></div>`;
+  h+=`<div class="rp-summary" style="grid-template-columns:repeat(5,1fr)">`;
+  h+=`<div><div class="rp-summary-n gold">${totalF}</div><div class="rp-summary-l">Functional</div></div>`;
+  h+=`<div><div class="rp-summary-n" style="color:#9B59B6">${totalNF}</div><div class="rp-summary-l">Non-Functional</div></div>`;
+  h+=`<div><div class="rp-summary-n green">${assetIn}</div><div class="rp-summary-l">In Scope ✓</div></div>`;
+  h+=`<div><div class="rp-summary-n" style="color:#E74C3C">${assetOut}</div><div class="rp-summary-l">Out Scope ✗</div></div>`;
+  h+=`<div><div class="rp-summary-n" style="color:#95A5A6">${assetPend}</div><div class="rp-summary-l">Pending</div></div>`;
+  h+=`</div>`;
+  h+=`<div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;display:flex;margin-bottom:6px">`;
+  h+=`<div style="width:${(totalF+totalNF)>0?(assetIn/(totalF+totalNF)*100):0}%;background:#2ECC71;height:100%"></div>`;
+  h+=`<div style="width:${(totalF+totalNF)>0?(assetOut/(totalF+totalNF)*100):0}%;background:#E74C3C;height:100%"></div>`;
+  h+=`</div>`;
+  h+=`<div style="font-size:9px;color:#888;margin-bottom:8px">${assetPct}% reviewed | Confidence: <span class="rp-conf rp-conf-${a.conf==='Confirmed'?'confirmed':'multi'}">${a.conf}</span></div>`;
   if(a.warning)h+=`<div style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:4px;padding:8px;margin:8px 0;font-size:9px;color:#E74C3C">⚠️ ${a.warning}</div>`;
   h+=`<div class="rp-section">Epic Breakdown (click to expand requirements)</div>`;
   a.epics.forEach((e,ei)=>{
     const confCls=e.conf==='confirmed'?'rp-conf-confirmed':'rp-conf-multi';
     h+=`<div class="rp-epic">`;
-    h+=`<div class="rp-epic-hdr" onclick="toggleReqs('${assetId}_${ei}')">`;
+    h+=`<div class="rp-epic-hdr" id="epichdr_${assetId}_${ei}">`;
     h+=`<span class="rp-epic-key"><a href="https://jira.suncorp.app/jira/browse/${e.k}" target="_blank" onclick="event.stopPropagation()">${e.k}</a></span>`;
-    h+=`<span class="rp-epic-name">${e.n}</span>`;
-    h+=`<span class="rp-epic-counts">${e.f}F | ${e.nf}NF | ${e.f+e.nf}</span>`;
+    h+=`<span class="rp-epic-name" onclick="toggleReqs('${assetId}_${ei}')">${e.n}</span>`;
+    h+=`<span class="rp-epic-counts">${e.f}F | ${e.nf}NF</span>`;
     h+=`<span class="rp-conf ${confCls}">${e.conf}</span>`;
     if(e.linked!=='—')h+=`<span style="font-size:7px;color:#E67E22;margin-left:4px">${e.linked}</span>`;
+    h+=`<span style="display:flex;gap:2px;margin-left:6px">`;
+    h+=`<button class="scope-btn scope-in" style="font-size:7px;padding:1px 5px" onclick="event.stopPropagation();setEpicScope('${assetId}',${ei},'in')" title="Mark all requirements In Scope">ALL ✓</button>`;
+    h+=`<button class="scope-btn scope-out" style="font-size:7px;padding:1px 5px" onclick="event.stopPropagation();setEpicScope('${assetId}',${ei},'out')" title="Mark all requirements Out of Scope">ALL ✗</button>`;
+    h+=`</span>`;
     h+=`</div>`;
     h+=`<div class="rp-expand" onclick="toggleReqs('${assetId}_${ei}')">▶ Show ${e.reqs.length} requirements</div>`;
     h+=`<div class="rp-reqs" id="reqs_${assetId}_${ei}">`;
@@ -763,6 +795,31 @@ function updateScopeCount(epicId){
   });
   counter.innerHTML=`<span class="sc-in">✓ ${inC} In Scope</span><span class="sc-out">✗ ${outC} Out of Scope</span><span class="sc-pending">? ${pendC} Pending</span>`;
 }
+function setEpicScope(assetId,ei,scope){
+  const a=AD[assetId];if(!a)return;
+  const e=a.epics[ei];if(!e)return;
+  e.reqs.forEach((r,ri)=>{
+    const reqId=assetId+'_'+ei+'_'+ri;
+    localStorage.setItem('scope_'+reqId,scope);
+    const row=document.getElementById('reqrow_'+reqId);
+    if(row){
+      row.classList.remove('scoped-in','scoped-out');
+      row.classList.add(scope==='in'?'scoped-in':'scoped-out');
+      const btns=row.querySelectorAll('.scope-btn');
+      btns.forEach(b=>b.classList.remove('active'));
+      const activeBtn=row.querySelector('.scope-'+scope);
+      if(activeBtn)activeBtn.classList.add('active');
+    }
+  });
+  // Update epic header styling
+  const hdr=document.getElementById('epichdr_'+assetId+'_'+ei);
+  if(hdr){
+    hdr.classList.remove('row-approved','row-rejected');
+    hdr.classList.add(scope==='in'?'row-approved':'row-rejected');
+  }
+  updateScopeCount(assetId+'_'+ei);
+  updateScoreboard();
+}
 function toggleReqs(id){
   const el=document.getElementById('reqs_'+id);
   if(el){
@@ -775,38 +832,51 @@ function toggleReqs(id){
 
 // ============ SCOREBOARD ============
 function updateScoreboard(){
-  let total=0,inC=0,outC=0;
+  let totalF=0,totalNF=0,inC=0,outC=0;
+  let cvmGoodesPend=0,cvmFarrugiaPend=0;
   Object.keys(AD).forEach(aid=>{
     const a=AD[aid];
-    a.epics.forEach(e=>{total+=e.reqs.length});
+    let assetPend=0;
+    a.epics.forEach((e,ei)=>{
+      totalF+=e.f;totalNF+=e.nf;
+      e.reqs.forEach((r,ri)=>{
+        const key='scope_'+aid+'_'+ei+'_'+ri;
+        const v=localStorage.getItem(key);
+        if(v==='in')inC++;
+        else if(v==='out')outC++;
+        else assetPend++;
+      });
+    });
+    if(a.cvm==='David Goodes')cvmGoodesPend+=assetPend;
+    if(a.cvm==='Steven Farrugia')cvmFarrugiaPend+=assetPend;
   });
-  // Count from localStorage
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);
-    if(k.startsWith('scope_')){
-      const v=localStorage.getItem(k);
-      if(v==='in')inC++;
-      if(v==='out')outC++;
-    }
-  }
+  const total=totalF+totalNF;
   const pending=total-inC-outC;
   const pct=total>0?Math.round(((inC+outC)/total)*100):0;
-  document.getElementById('sbTotal').textContent=total;
+  document.getElementById('sbTotalF').textContent=totalF;
+  document.getElementById('sbTotalNF').textContent=totalNF;
   document.getElementById('sbIn').textContent=inC;
   document.getElementById('sbOut').textContent=outC;
   document.getElementById('sbPending').textContent=pending;
   document.getElementById('sbBarIn').style.width=(total>0?(inC/total*100):0)+'%';
   document.getElementById('sbBarOut').style.width=(total>0?(outC/total*100):0)+'%';
   document.getElementById('sbPct').textContent=pct+'% reviewed ('+inC+' in + '+outC+' out of '+total+')';
+  document.getElementById('sbCvmGoodes').textContent=cvmGoodesPend+' pending';
+  document.getElementById('sbCvmFarrugia').textContent=cvmFarrugiaPend+' pending';
   const pendBlock=document.getElementById('sbPendingBlock');
   const trophy=document.getElementById('sbTrophy');
   if(pending===0&&total>0){
-    pendBlock.classList.add('zero');
-    trophy.classList.add('visible');
+    pendBlock.classList.add('zero');trophy.classList.add('visible');
   } else {
-    pendBlock.classList.remove('zero');
-    trophy.classList.remove('visible');
+    pendBlock.classList.remove('zero');trophy.classList.remove('visible');
   }
+  // Update stats bar total
+  const trs=document.getElementById('totalReqsStat');
+  if(trs)trs.textContent=total;
+  const grc=document.getElementById('goldReqCount');
+  if(grc)grc.textContent=totalF+'F + '+totalNF+'NF mapped';
+  const sf=document.getElementById('statF');if(sf)sf.textContent=totalF+' F';
+  const snf=document.getElementById('statNF');if(snf)snf.textContent=totalNF+' NF';
 }
 // Highlight entire lane when clicking stats
 function highlightLane(laneCls){
