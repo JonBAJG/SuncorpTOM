@@ -865,7 +865,7 @@ function showReqPanel(assetId){
     h+=`<span class="rp-epic-key"><a href="https://jira.suncorp.app/jira/browse/${e.k}" target="_blank" onclick="event.stopPropagation()">${e.k}</a></span>`;
     h+=`<span class="rp-epic-name" onclick="toggleReqs('${assetId}_${ei}')">${e.n}</span>`;
     h+=`<span class="rp-epic-counts">${e.f}F | ${e.nf}NF</span>`;
-    h+=`<span class="rp-conf ${confCls}">${e.conf}</span>`;
+    h+=`<span class="rp-conf ${confCls}" id="epicconf_${assetId}_${ei}">${epicScope==='in'?'IN SCOPE':epicScope==='out'?'OUT OF SCOPE':e.conf}</span>`;
     if(e.linked!=='—')h+=`<span style="font-size:7px;color:#E67E22;margin-left:4px">${e.linked}</span>`;
     h+=`<span style="display:flex;gap:2px;margin-left:6px">`;
     h+=`<button class="scope-btn scope-in ${epicScope==='in'?'active':''}" style="font-size:7px;padding:1px 5px" onclick="event.stopPropagation();setEpicHeaderScope('${assetId}',${ei},'in')" title="Mark epic In Scope">✓</button>`;
@@ -978,6 +978,17 @@ function setEpicHeaderScope(assetId,ei,scope){
     if(newScope==='in')hdr.classList.add('row-approved');
     if(newScope==='out')hdr.classList.add('row-rejected');
   }
+  // Update conf badge
+  const confBadge=document.getElementById('epicconf_'+assetId+'_'+ei);
+  if(confBadge){
+    confBadge.classList.remove('rp-conf-confirmed','rp-conf-multi');
+    if(newScope==='in'){confBadge.textContent='IN SCOPE';confBadge.classList.add('rp-conf-confirmed')}
+    else if(newScope==='out'){confBadge.textContent='OUT OF SCOPE';confBadge.classList.add('rp-conf-multi')}
+    else{confBadge.textContent=e.conf;confBadge.classList.add(e.conf==='confirmed'?'rp-conf-confirmed':'rp-conf-multi')}
+  }
+  // If out of scope, dim child requirements
+  const reqsDiv=document.getElementById('reqs_'+assetId+'_'+ei);
+  if(reqsDiv){reqsDiv.style.opacity=newScope==='out'?'0.3':'1'}
   // Update epic header buttons
   const btns=hdr?hdr.querySelectorAll('.scope-btn.scope-in, .scope-btn.scope-out'):[];
   btns.forEach(b=>{if(b.textContent.includes('ALL'))return;b.classList.remove('active')});
