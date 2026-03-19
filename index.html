@@ -124,6 +124,32 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 .info-details{font-size:10px;color:#999;max-width:400px}
 .info-details td{padding:1px 8px 1px 0}
 .info-details .label{color:#666;text-transform:uppercase;font-size:8px;letter-spacing:0.5px}
+.scoreboard{display:flex;gap:2px;padding:6px 24px;background:linear-gradient(90deg,rgba(0,0,0,0.4),rgba(0,0,0,0.2));align-items:center;flex-wrap:wrap}
+.sb-title{font-size:9px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-right:8px;font-weight:700}
+.sb-block{display:flex;flex-direction:column;align-items:center;padding:4px 12px;border-radius:4px;min-width:70px}
+.sb-num{font-size:22px;font-weight:900;line-height:1}
+.sb-label{font-size:7px;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px}
+.sb-total{background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.3)}
+.sb-total .sb-num{color:var(--gold)}
+.sb-total .sb-label{color:rgba(212,168,67,0.6)}
+.sb-in{background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.3)}
+.sb-in .sb-num{color:#2ECC71}
+.sb-in .sb-label{color:rgba(46,204,113,0.6)}
+.sb-out{background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3)}
+.sb-out .sb-num{color:#E74C3C}
+.sb-out .sb-label{color:rgba(231,76,60,0.6)}
+.sb-pending{background:rgba(149,165,166,0.1);border:1px solid rgba(149,165,166,0.3)}
+.sb-pending .sb-num{color:#95A5A6}
+.sb-pending .sb-label{color:rgba(149,165,166,0.6)}
+.sb-pending.zero .sb-num{color:#2ECC71!important;text-shadow:0 0 12px rgba(46,204,113,0.5)}
+.sb-pending.zero{border-color:#2ECC71!important;background:rgba(46,204,113,0.15)!important}
+.sb-bar{flex:1;min-width:200px;max-width:400px;margin:0 12px}
+.sb-bar-track{height:10px;background:rgba(255,255,255,0.06);border-radius:5px;overflow:hidden;display:flex}
+.sb-bar-in{background:linear-gradient(90deg,#2ECC71,#27AE60);height:100%;transition:width 0.5s ease}
+.sb-bar-out{background:linear-gradient(90deg,#E74C3C,#C0392B);height:100%;transition:width 0.5s ease}
+.sb-bar-pct{font-size:9px;color:var(--teal);margin-top:2px;text-align:center}
+.sb-trophy{font-size:16px;margin-left:8px;opacity:0;transition:opacity 0.5s}
+.sb-trophy.visible{opacity:1}
 </style>
 </head>
 <body>
@@ -175,6 +201,15 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <button class="btn" onclick="selectGold('gold_cape')" style="border-color:var(--rogue);font-size:10px;padding:4px 10px">CaPE</button>
 </span>
 </div>
+</div>
+<div class="scoreboard" id="scoreboard">
+<span class="sb-title">Scope Review Progress</span>
+<div class="sb-block sb-total"><div class="sb-num" id="sbTotal">0</div><div class="sb-label">Total Reqs</div></div>
+<div class="sb-block sb-in"><div class="sb-num" id="sbIn">0</div><div class="sb-label">In Scope ✓</div></div>
+<div class="sb-block sb-out"><div class="sb-num" id="sbOut">0</div><div class="sb-label">Out of Scope ✗</div></div>
+<div class="sb-block sb-pending" id="sbPendingBlock"><div class="sb-num" id="sbPending">0</div><div class="sb-label">Pending → Goal: 0</div></div>
+<div class="sb-bar"><div class="sb-bar-track"><div class="sb-bar-in" id="sbBarIn" style="width:0%"></div><div class="sb-bar-out" id="sbBarOut" style="width:0%"></div></div><div class="sb-bar-pct" id="sbPct">0% reviewed</div></div>
+<span class="sb-trophy" id="sbTrophy">🏆</span>
 </div>
 <div class="stats">
 <div class="stat"><div class="stat-n">23</div><div class="stat-l">Sources</div></div>
@@ -706,6 +741,7 @@ function setScope(reqId,scope,totalReqs,epicId){
   }
   // Update scope counter
   updateScopeCount(epicId);
+  updateScoreboard();
 }
 function updateScopeCount(epicId){
   const counter=document.getElementById('scopecount_'+epicId);
@@ -730,6 +766,44 @@ function toggleReqs(id){
     if(el.classList.contains('open'))updateScopeCount(id);
   }
 }
+
+// ============ SCOREBOARD ============
+function updateScoreboard(){
+  let total=0,inC=0,outC=0;
+  Object.keys(AD).forEach(aid=>{
+    const a=AD[aid];
+    a.epics.forEach(e=>{total+=e.reqs.length});
+  });
+  // Count from localStorage
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k.startsWith('scope_')){
+      const v=localStorage.getItem(k);
+      if(v==='in')inC++;
+      if(v==='out')outC++;
+    }
+  }
+  const pending=total-inC-outC;
+  const pct=total>0?Math.round(((inC+outC)/total)*100):0;
+  document.getElementById('sbTotal').textContent=total;
+  document.getElementById('sbIn').textContent=inC;
+  document.getElementById('sbOut').textContent=outC;
+  document.getElementById('sbPending').textContent=pending;
+  document.getElementById('sbBarIn').style.width=(total>0?(inC/total*100):0)+'%';
+  document.getElementById('sbBarOut').style.width=(total>0?(outC/total*100):0)+'%';
+  document.getElementById('sbPct').textContent=pct+'% reviewed ('+inC+' in + '+outC+' out of '+total+')';
+  const pendBlock=document.getElementById('sbPendingBlock');
+  const trophy=document.getElementById('sbTrophy');
+  if(pending===0&&total>0){
+    pendBlock.classList.add('zero');
+    trophy.classList.add('visible');
+  } else {
+    pendBlock.classList.remove('zero');
+    trophy.classList.remove('visible');
+  }
+}
+// Update on load
+updateScoreboard();
 
 // Hook into traceNode — show panel when Gold asset clicked
 const origTrace=traceNode;
