@@ -202,21 +202,66 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 </span>
 </div>
 </div>
-<div class="scoreboard" id="scoreboard">
-<span class="sb-title">Scope Review</span>
+<div class="scoreboard" id="scoreboard" style="flex-wrap:nowrap;padding:8px 24px">
+<!-- LEFT: Totals -->
+<div style="display:flex;gap:6px;align-items:center">
 <div class="sb-block sb-total"><div class="sb-num" id="sbTotalF">0</div><div class="sb-label">Functional</div></div>
 <div class="sb-block sb-total" style="border-color:rgba(155,89,182,0.3)"><div class="sb-num" id="sbTotalNF" style="color:#9B59B6">0</div><div class="sb-label">Non-Functional</div></div>
-<div style="width:1px;height:30px;background:rgba(255,255,255,0.1);align-self:center"></div>
+</div>
+<div style="width:1px;height:50px;background:rgba(255,255,255,0.1)"></div>
+<!-- CENTER: Progress -->
+<div style="display:flex;gap:6px;align-items:center">
 <div class="sb-block sb-in"><div class="sb-num" id="sbIn">0</div><div class="sb-label">In Scope ✓</div></div>
-<div class="sb-block sb-out"><div class="sb-num" id="sbOut">0</div><div class="sb-label">Out of Scope ✗</div></div>
+<div class="sb-block sb-out"><div class="sb-num" id="sbOut">0</div><div class="sb-label">Out Scope ✗</div></div>
 <div class="sb-block sb-pending" id="sbPendingBlock"><div class="sb-num" id="sbPending">0</div><div class="sb-label">Pending → 0</div></div>
-<div class="sb-bar"><div class="sb-bar-track"><div class="sb-bar-in" id="sbBarIn" style="width:0%"></div><div class="sb-bar-out" id="sbBarOut" style="width:0%"></div></div><div class="sb-bar-pct" id="sbPct">0% reviewed</div></div>
+<div style="width:120px"><div class="sb-bar-track" style="height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;display:flex"><div class="sb-bar-in" id="sbBarIn" style="width:0%"></div><div class="sb-bar-out" id="sbBarOut" style="width:0%"></div></div><div class="sb-bar-pct" id="sbPct" style="font-size:8px;color:var(--teal);text-align:center;margin-top:2px">0%</div></div>
 <span class="sb-trophy" id="sbTrophy">🏆</span>
-<div style="width:1px;height:30px;background:rgba(255,255,255,0.1);align-self:center"></div>
-<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
-<span style="font-size:7px;color:#666;text-transform:uppercase">CVM:</span>
-<div class="sb-block" style="padding:2px 8px;border:1px solid rgba(52,152,219,0.3);border-radius:3px"><div class="sb-num" style="font-size:12px;color:var(--wade)" id="sbCvmGoodes">0</div><div class="sb-label" style="font-size:6px">Goodes</div></div>
-<div class="sb-block" style="padding:2px 8px;border:1px solid rgba(46,204,113,0.3);border-radius:3px"><div class="sb-num" style="font-size:12px;color:var(--odin)" id="sbCvmFarrugia">0</div><div class="sb-label" style="font-size:6px">Farrugia</div></div>
+</div>
+<div style="width:1px;height:50px;background:rgba(255,255,255,0.1)"></div>
+<!-- RIGHT: CVM Leaderboard -->
+<div style="display:flex;gap:8px;align-items:stretch">
+<div style="text-align:center;padding:8px 20px;border:2px solid rgba(52,152,219,0.4);border-radius:8px;background:rgba(52,152,219,0.06);min-width:140px;cursor:pointer" onclick="filterCVM('goodes')">
+<div style="font-size:10px;font-weight:700;color:var(--wade);margin-bottom:4px">DAVID GOODES</div>
+<div style="font-size:9px;color:#888;margin-bottom:4px">Customer · Pricing</div>
+<div style="display:flex;justify-content:center;gap:12px">
+<div><div style="font-size:24px;font-weight:900;color:#95A5A6" id="sbCvmGoodes">0</div><div style="font-size:7px;color:#666">PENDING</div></div>
+<div><div style="font-size:24px;font-weight:900;color:#2ECC71" id="sbCvmGoodesIn">0</div><div style="font-size:7px;color:#666">DONE</div></div>
+</div>
+<div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-top:4px;display:flex"><div id="sbCvmGoodesBar" style="background:var(--wade);height:100%;width:0%;transition:width 0.5s"></div></div>
+</div>
+<div style="text-align:center;padding:8px 20px;border:2px solid rgba(46,204,113,0.4);border-radius:8px;background:rgba(46,204,113,0.06);min-width:140px;cursor:pointer" onclick="filterCVM('farrugia')">
+<div style="font-size:10px;font-weight:700;color:var(--odin);margin-bottom:4px">STEVEN FARRUGIA</div>
+<div style="font-size:9px;color:#888;margin-bottom:4px">Corporate Services</div>
+<div style="display:flex;justify-content:center;gap:12px">
+<div><div style="font-size:24px;font-weight:900;color:#95A5A6" id="sbCvmFarrugia">0</div><div style="font-size:7px;color:#666">PENDING</div></div>
+<div><div style="font-size:24px;font-weight:900;color:#2ECC71" id="sbCvmFarrugiaIn">0</div><div style="font-size:7px;color:#666">DONE</div></div>
+</div>
+<div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-top:4px;display:flex"><div id="sbCvmFarrugiaBar" style="background:var(--odin);height:100%;width:0%;transition:width 0.5s"></div></div>
+</div>
+</div>
+<div style="width:1px;height:50px;background:rgba(255,255,255,0.1)"></div>
+<!-- FAR RIGHT: Squad Leaderboard -->
+<div style="display:flex;gap:6px;align-items:stretch">
+<div style="text-align:center;padding:6px 10px;border:1px solid rgba(52,152,219,0.3);border-radius:6px;background:rgba(52,152,219,0.04);min-width:70px">
+<div style="font-size:8px;font-weight:700;color:var(--wade)">WADE</div>
+<div style="font-size:18px;font-weight:900;color:#95A5A6" id="sbSquadWade">0</div>
+<div style="font-size:6px;color:#666">PENDING</div>
+</div>
+<div style="text-align:center;padding:6px 10px;border:1px solid rgba(46,204,113,0.3);border-radius:6px;background:rgba(46,204,113,0.04);min-width:70px">
+<div style="font-size:8px;font-weight:700;color:var(--odin)">ODIN</div>
+<div style="font-size:18px;font-weight:900;color:#95A5A6" id="sbSquadOdin">0</div>
+<div style="font-size:6px;color:#666">PENDING</div>
+</div>
+<div style="text-align:center;padding:6px 10px;border:1px solid rgba(155,89,182,0.3);border-radius:6px;background:rgba(155,89,182,0.04);min-width:70px">
+<div style="font-size:8px;font-weight:700;color:var(--stanlee)">STANLEE</div>
+<div style="font-size:18px;font-weight:900;color:#95A5A6" id="sbSquadStanlee">0</div>
+<div style="font-size:6px;color:#666">PENDING</div>
+</div>
+<div style="text-align:center;padding:6px 10px;border:1px solid rgba(230,126,34,0.3);border-radius:6px;background:rgba(230,126,34,0.04);min-width:70px">
+<div style="font-size:8px;font-weight:700;color:var(--rogue)">ROGUE</div>
+<div style="font-size:18px;font-weight:900;color:#95A5A6" id="sbSquadRogue">0</div>
+<div style="font-size:6px;color:#666">PENDING</div>
+</div>
 </div>
 </div>
 <div class="stats" id="statsBar">
@@ -858,22 +903,29 @@ function toggleReqs(id){
 // ============ SCOREBOARD ============
 function updateScoreboard(){
   let totalF=0,totalNF=0,inC=0,outC=0;
-  let cvmGoodesPend=0,cvmFarrugiaPend=0;
+  let cvmGoodesPend=0,cvmFarrugiaPend=0,cvmGoodesTotal=0,cvmFarrugiaTotal=0,cvmGoodesDone=0,cvmFarrugiaDone=0;
+  let sqWade=0,sqOdin=0,sqStanlee=0,sqRogue=0;
   Object.keys(AD).forEach(aid=>{
     const a=AD[aid];
-    let assetPend=0;
+    let assetPend=0,assetDone=0,assetTotal=0;
     a.epics.forEach((e,ei)=>{
       totalF+=e.f;totalNF+=e.nf;
       e.reqs.forEach((r,ri)=>{
+        assetTotal++;
         const key='scope_'+aid+'_'+ei+'_'+ri;
         const v=localStorage.getItem(key);
-        if(v==='in')inC++;
-        else if(v==='out')outC++;
+        if(v==='in'){inC++;assetDone++}
+        else if(v==='out'){outC++;assetDone++}
         else assetPend++;
       });
     });
-    if(a.cvm==='David Goodes')cvmGoodesPend+=assetPend;
-    if(a.cvm==='Steven Farrugia')cvmFarrugiaPend+=assetPend;
+    if(a.cvm==='David Goodes'){cvmGoodesPend+=assetPend;cvmGoodesTotal+=assetTotal;cvmGoodesDone+=assetDone}
+    if(a.cvm==='Steven Farrugia'){cvmFarrugiaPend+=assetPend;cvmFarrugiaTotal+=assetTotal;cvmFarrugiaDone+=assetDone}
+    const sq=a.squad?a.squad.toLowerCase():'';
+    if(sq.includes('wade'))sqWade+=assetPend;
+    if(sq.includes('odin'))sqOdin+=assetPend;
+    if(sq.includes('stanlee')||sq.includes('phoenix'))sqStanlee+=assetPend;
+    if(sq.includes('rogue'))sqRogue+=assetPend;
   });
   const total=totalF+totalNF;
   const pending=total-inC-outC;
@@ -886,8 +938,21 @@ function updateScoreboard(){
   document.getElementById('sbBarIn').style.width=(total>0?(inC/total*100):0)+'%';
   document.getElementById('sbBarOut').style.width=(total>0?(outC/total*100):0)+'%';
   document.getElementById('sbPct').textContent=pct+'% reviewed ('+inC+' in + '+outC+' out of '+total+')';
-  document.getElementById('sbCvmGoodes').textContent=cvmGoodesPend+' pending';
-  document.getElementById('sbCvmFarrugia').textContent=cvmFarrugiaPend+' pending';
+  document.getElementById('sbCvmGoodes').textContent=cvmGoodesPend;
+  document.getElementById('sbCvmGoodesIn').textContent=cvmGoodesDone;
+  document.getElementById('sbCvmGoodesBar').style.width=cvmGoodesTotal>0?(cvmGoodesDone/cvmGoodesTotal*100)+'%':'0%';
+  document.getElementById('sbCvmFarrugia').textContent=cvmFarrugiaPend;
+  document.getElementById('sbCvmFarrugiaIn').textContent=cvmFarrugiaDone;
+  document.getElementById('sbCvmFarrugiaBar').style.width=cvmFarrugiaTotal>0?(cvmFarrugiaDone/cvmFarrugiaTotal*100)+'%':'0%';
+  document.getElementById('sbSquadWade').textContent=sqWade;
+  document.getElementById('sbSquadOdin').textContent=sqOdin;
+  document.getElementById('sbSquadStanlee').textContent=sqStanlee;
+  document.getElementById('sbSquadRogue').textContent=sqRogue;
+  // Color squad pending numbers — green when 0
+  ['Wade','Odin','Stanlee','Rogue'].forEach(s=>{
+    const el=document.getElementById('sbSquad'+s);
+    if(el)el.style.color=parseInt(el.textContent)===0?'#2ECC71':'#95A5A6';
+  });
   const pendBlock=document.getElementById('sbPendingBlock');
   const trophy=document.getElementById('sbTrophy');
   if(pending===0&&total>0){
