@@ -192,6 +192,7 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <button class="btn" id="btnLineage" onclick="setMode('lineage')">Lineage (direct)</button>
 <span style="margin-left:16px"></span>
 <button class="btn" onclick="clearTrace()" style="border-color:#E74C3C;color:#E74C3C">✕ Clear</button>
+<button class="btn" onclick="exportAll()" style="border-color:var(--teal);color:var(--teal);background:rgba(13,139,139,0.1)">📥 Export All CSV</button>
 </div>
 </div>
 <div class="header-right">
@@ -205,6 +206,7 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <span style="font-size:7px;color:#2ECC71;font-weight:700" id="sbCvmGoodesScope">0 in</span>
 <span style="font-size:7px;color:#E74C3C" id="sbCvmGoodesOut">0 out</span>
 </div>
+<div style="margin-top:3px"><button class="btn" style="font-size:7px;padding:1px 6px;border-color:var(--teal);color:var(--teal)" onclick="event.stopPropagation();exportByCVM('goodes')">📥 CSV</button></div>
 </div>
 <div class="stat" style="border:1px solid var(--odin);border-radius:6px;padding:6px 12px;cursor:pointer;text-align:center" onclick="filterCVM('farrugia')">
 <div class="stat-n" id="sbCvmFarrugiaTotal" style="color:var(--odin);margin:0">0</div>
@@ -213,6 +215,7 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <span style="font-size:7px;color:#2ECC71;font-weight:700" id="sbCvmFarrugiaScope">0 in</span>
 <span style="font-size:7px;color:#E74C3C" id="sbCvmFarrugiaOut">0 out</span>
 </div>
+<div style="margin-top:3px"><button class="btn" style="font-size:7px;padding:1px 6px;border-color:var(--teal);color:var(--teal)" onclick="event.stopPropagation();exportByCVM('farrugia')">📥 CSV</button></div>
 </div>
 </div>
 </div>
@@ -226,6 +229,7 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <span style="color:#2ECC71;font-weight:700" id="sbSquadWadeIn">✓ 0</span>
 <span style="color:#95A5A6;font-weight:700" id="sbSquadWade">? 0</span>
 </div>
+<div style="margin-top:2px"><button class="btn" style="font-size:6px;padding:1px 4px;border-color:var(--teal);color:var(--teal)" onclick="event.stopPropagation();exportBySquad('wade')">📥</button></div>
 </div>
 <div class="stat" style="border:1px solid var(--odin);border-radius:6px;padding:6px 8px;cursor:pointer;text-align:center" onclick="filterSquad('odin')">
 <div class="stat-n" id="sbSquadOdinTotal" style="color:var(--odin);margin:0;font-size:24px">0</div>
@@ -234,6 +238,7 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <span style="color:#2ECC71;font-weight:700" id="sbSquadOdinIn">✓ 0</span>
 <span style="color:#95A5A6;font-weight:700" id="sbSquadOdin">? 0</span>
 </div>
+<div style="margin-top:2px"><button class="btn" style="font-size:6px;padding:1px 4px;border-color:var(--teal);color:var(--teal)" onclick="event.stopPropagation();exportBySquad('odin')">📥</button></div>
 </div>
 <div class="stat" style="border:1px solid var(--stanlee);border-radius:6px;padding:6px 8px;cursor:pointer;text-align:center" onclick="filterSquad('stanlee')">
 <div class="stat-n" id="sbSquadStanleeTotal" style="color:var(--stanlee);margin:0;font-size:24px">0</div>
@@ -242,6 +247,7 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <span style="color:#2ECC71;font-weight:700" id="sbSquadStanleeIn">✓ 0</span>
 <span style="color:#95A5A6;font-weight:700" id="sbSquadStanlee">? 0</span>
 </div>
+<div style="margin-top:2px"><button class="btn" style="font-size:6px;padding:1px 4px;border-color:var(--teal);color:var(--teal)" onclick="event.stopPropagation();exportBySquad('stanlee')">📥</button></div>
 </div>
 <div class="stat" style="border:1px solid var(--rogue);border-radius:6px;padding:6px 8px;cursor:pointer;text-align:center" onclick="filterSquad('rogue')">
 <div class="stat-n" id="sbSquadRogueTotal" style="color:var(--rogue);margin:0;font-size:24px">0</div>
@@ -250,6 +256,7 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 <span style="color:#2ECC71;font-weight:700" id="sbSquadRogueIn">✓ 0</span>
 <span style="color:#95A5A6;font-weight:700" id="sbSquadRogue">? 0</span>
 </div>
+<div style="margin-top:2px"><button class="btn" style="font-size:6px;padding:1px 4px;border-color:var(--teal);color:var(--teal)" onclick="event.stopPropagation();exportBySquad('rogue')">📥</button></div>
 </div>
 </div>
 </div>
@@ -815,6 +822,7 @@ function showReqPanel(assetId){
   const totalF=a.epics.reduce((s,e)=>s+e.f,0);
   const totalNF=a.epics.reduce((s,e)=>s+e.nf,0);
   let h=`<div style="display:flex;gap:8px;position:absolute;top:10px;right:14px">`;
+  h+=`<button class="btn" style="font-size:9px;padding:4px 8px;background:rgba(13,139,139,0.15);border-color:var(--teal);color:var(--teal)" onclick="exportAsset('${assetId}')" title="Export this asset's requirements to CSV">📥 Export CSV</button>`;
   h+=`<button class="btn" style="font-size:9px;padding:4px 8px" onclick="clearAsset('${assetId}')" title="Clear all scope data for this asset">🔄 Reset</button>`;
   h+=`<button class="rp-close" onclick="document.getElementById('reqPanel').classList.remove('open')">&times;</button>`;
   h+=`</div>`;
@@ -1215,6 +1223,84 @@ selectGold=function(goldId){
   origSelect(goldId);
   if(AD[goldId])showReqPanel(goldId);
 };
+
+// ============ EXPORT FUNCTIONS ============
+function buildCSV(rows){
+  return rows.map(r=>r.map(c=>'"'+(c||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
+}
+function downloadCSV(filename,csv){
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+}
+function exportAsset(assetId){
+  const a=AD[assetId];if(!a)return;
+  const rows=[['Asset','CEAD','Squad','CVM','Epic Key','Epic Name','Req Key','Requirement Summary','Type','Epic Scope','Req Scope']];
+  a.epics.forEach((e,ei)=>{
+    const epicScope=localStorage.getItem('epic_scope_'+assetId+'_'+ei)||'Not Set';
+    e.reqs.forEach((r,ri)=>{
+      const reqScope=localStorage.getItem('scope_'+assetId+'_'+ei+'_'+ri)||'Not Reviewed';
+      const scope=reqScope==='in'?'In Scope':reqScope==='out'?'Out of Scope':'Not Reviewed';
+      const eScope=epicScope==='in'?'In Scope':epicScope==='out'?'Out of Scope':'Not Set';
+      rows.push([a.name,a.cead,a.squad,a.cvm,e.k,e.n,r.k,r.s,r.nf?'Non-Functional':'Functional',eScope,scope]);
+    });
+  });
+  downloadCSV(a.cead+'_'+a.name.replace(/[^a-zA-Z0-9]/g,'_')+'_requirements.csv',buildCSV(rows));
+}
+function exportBySquad(squad){
+  const rows=[['Asset','CEAD','Squad','CVM','Epic Key','Epic Name','Req Key','Requirement Summary','Type','Epic Scope','Req Scope']];
+  Object.keys(AD).forEach(aid=>{
+    const a=AD[aid];
+    const sq=a.squad?a.squad.toLowerCase():'';
+    if(!sq.includes(squad.toLowerCase()))return;
+    a.epics.forEach((e,ei)=>{
+      const epicScope=localStorage.getItem('epic_scope_'+aid+'_'+ei)||'Not Set';
+      e.reqs.forEach((r,ri)=>{
+        const reqScope=localStorage.getItem('scope_'+aid+'_'+ei+'_'+ri)||'Not Reviewed';
+        const scope=reqScope==='in'?'In Scope':reqScope==='out'?'Out of Scope':'Not Reviewed';
+        const eScope=epicScope==='in'?'In Scope':epicScope==='out'?'Out of Scope':'Not Set';
+        rows.push([a.name,a.cead,a.squad,a.cvm,e.k,e.n,r.k,r.s,r.nf?'Non-Functional':'Functional',eScope,scope]);
+      });
+    });
+  });
+  downloadCSV(squad+'_squad_requirements.csv',buildCSV(rows));
+}
+function exportByCVM(cvm){
+  const cvmName=cvm==='goodes'?'David Goodes':'Steven Farrugia';
+  const rows=[['Asset','CEAD','Squad','CVM','Epic Key','Epic Name','Req Key','Requirement Summary','Type','Epic Scope','Req Scope']];
+  Object.keys(AD).forEach(aid=>{
+    const a=AD[aid];
+    if(a.cvm!==cvmName)return;
+    a.epics.forEach((e,ei)=>{
+      const epicScope=localStorage.getItem('epic_scope_'+aid+'_'+ei)||'Not Set';
+      e.reqs.forEach((r,ri)=>{
+        const reqScope=localStorage.getItem('scope_'+aid+'_'+ei+'_'+ri)||'Not Reviewed';
+        const scope=reqScope==='in'?'In Scope':reqScope==='out'?'Out of Scope':'Not Reviewed';
+        const eScope=epicScope==='in'?'In Scope':epicScope==='out'?'Out of Scope':'Not Set';
+        rows.push([a.name,a.cead,a.squad,a.cvm,e.k,e.n,r.k,r.s,r.nf?'Non-Functional':'Functional',eScope,scope]);
+      });
+    });
+  });
+  downloadCSV(cvmName.replace(/ /g,'_')+'_requirements.csv',buildCSV(rows));
+}
+function exportAll(){
+  const rows=[['Asset','CEAD','Squad','CVM','Epic Key','Epic Name','Req Key','Requirement Summary','Type','Epic Scope','Req Scope']];
+  Object.keys(AD).forEach(aid=>{
+    const a=AD[aid];
+    a.epics.forEach((e,ei)=>{
+      const epicScope=localStorage.getItem('epic_scope_'+aid+'_'+ei)||'Not Set';
+      e.reqs.forEach((r,ri)=>{
+        const reqScope=localStorage.getItem('scope_'+aid+'_'+ei+'_'+ri)||'Not Reviewed';
+        const scope=reqScope==='in'?'In Scope':reqScope==='out'?'Out of Scope':'Not Reviewed';
+        const eScope=epicScope==='in'?'In Scope':epicScope==='out'?'Out of Scope':'Not Set';
+        rows.push([a.name,a.cead,a.squad,a.cvm,e.k,e.n,r.k,r.s,r.nf?'Non-Functional':'Functional',eScope,scope]);
+      });
+    });
+  });
+  downloadCSV('DI_R2_All_Requirements_Scope_Review.csv',buildCSV(rows));
+}
 </script>
 </body>
-</html><!-- cache-bust 1773957562 -->
+</html>
