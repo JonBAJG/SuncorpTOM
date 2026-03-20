@@ -5,47 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DI R2 — Gold & Downstream Traceability Map</title>
 <style>
-:root{--bg:#0a0a1a;--gold:#D4A843;--teal:#0D8B8B;--wade:#3498DB;--odin:#2ECC71;--stanlee:#9B59B6;--rogue:#E67E22;--navy:#1A2B4A;--highlight:#00E5FF}
+:root{--bg:#0b0f19;--gold:#F0C75E;--teal:#14B8A6;--wade:#60A5FA;--odin:#4ADE80;--stanlee:#C084FC;--rogue:#FB923C;--navy:#1E3A5F;--highlight:#22D3EE;--suncorp-teal:#009B8D;--suncorp-gold:#F5B731}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:#ccc}
-.header{padding:16px 24px;background:linear-gradient(135deg,#0d1117,#1a1a2e);border-bottom:2px solid var(--teal)}
-h1{font-size:20px;color:var(--gold);font-weight:700}
-.subtitle{font-size:11px;color:var(--teal);margin-top:2px}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:#d4d4d8}
+.header{padding:20px 24px;background:linear-gradient(135deg,#0f172a,#1e293b);border-bottom:3px solid var(--suncorp-teal)}
+h1{font-size:22px;color:var(--suncorp-gold);font-weight:700;text-shadow:0 0 20px rgba(245,183,49,0.2)}
+.subtitle{font-size:11px;color:var(--teal);margin-top:4px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px;padding:16px}
-.card{border:1px solid rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;transition:all 0.2s;cursor:default}
-.card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
-.card-hdr{padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
-.card-name{font-size:13px;font-weight:700;color:#fff}
-.card-cead{font-size:9px;color:#888}
-.card-squad{font-size:8px;padding:2px 6px;border-radius:3px;font-weight:700}
-.sq-wade{background:rgba(52,152,219,0.3);color:var(--wade)}
-.sq-odin{background:rgba(46,204,113,0.3);color:var(--odin)}
-.sq-stanlee{background:rgba(155,89,182,0.3);color:var(--stanlee)}
-.sq-rogue{background:rgba(230,126,34,0.3);color:var(--rogue)}
+.card{border:1px solid rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;transition:all 0.25s;cursor:default;background:rgba(255,255,255,0.02)}
+.card:hover{border-color:var(--teal);transform:translateY(-3px);box-shadow:0 8px 30px rgba(20,184,166,0.15)}
+.card-hdr{padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.card-name{font-size:14px;font-weight:700;color:#f8fafc}
+.card-cead{font-size:9px;color:#94a3b8}
+.card-squad{font-size:9px;padding:3px 8px;border-radius:4px;font-weight:700}
+.sq-wade{background:rgba(96,165,250,0.2);color:var(--wade);border:1px solid rgba(96,165,250,0.4)}
+.sq-odin{background:rgba(74,222,128,0.2);color:var(--odin);border:1px solid rgba(74,222,128,0.4)}
+.sq-stanlee{background:rgba(192,132,252,0.2);color:var(--stanlee);border:1px solid rgba(192,132,252,0.4)}
+.sq-rogue{background:rgba(251,146,60,0.2);color:var(--rogue);border:1px solid rgba(251,146,60,0.4)}
 .card-body{padding:0 14px 14px}
 .trace-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:10px}
 .trace-row:last-child{border:none}
-.trace-label{min-width:70px;color:#666;font-size:8px;text-transform:uppercase;letter-spacing:0.5px;padding-top:2px}
-.trace-val{flex:1;color:#ccc}
-.trace-val a{color:var(--teal);text-decoration:none}
-.trace-val a:hover{text-decoration:underline}
-.epic-row{background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.15);border-radius:4px;padding:6px 8px;margin:3px 0;font-size:9px}
-.epic-key{color:#9B59B6;font-weight:700}
-.epic-name{color:#bbb;margin-left:6px}
-.epic-count{float:right;font-size:8px;color:#888}
-.section-title{font-size:9px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin:10px 0 4px;padding-bottom:3px;border-bottom:1px solid rgba(13,139,139,0.2)}
-.downstream-tag{display:inline-block;font-size:8px;padding:2px 6px;border-radius:3px;margin:2px;background:rgba(26,43,74,0.3);border:1px solid rgba(13,139,139,0.3);color:var(--teal)}
-.req-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px}
-.badge-f{background:rgba(212,168,67,0.2);color:var(--gold)}
-.badge-nf{background:rgba(155,89,182,0.2);color:#9B59B6}
+.trace-label{min-width:70px;color:#64748b;font-size:8px;text-transform:uppercase;letter-spacing:0.5px;padding-top:2px;font-weight:600}
+.trace-val{flex:1;color:#cbd5e1}
+.trace-val a{color:var(--teal);text-decoration:none;font-weight:500}
+.trace-val a:hover{text-decoration:underline;color:var(--highlight)}
+.epic-row{background:rgba(192,132,252,0.06);border:1px solid rgba(192,132,252,0.2);border-radius:6px;padding:8px 10px;margin:3px 0;font-size:10px;transition:all 0.15s}
+.epic-row:hover{background:rgba(192,132,252,0.12);border-color:rgba(192,132,252,0.4)}
+.epic-key{color:var(--stanlee);font-weight:700}
+.epic-name{color:#a1a1aa;margin-left:8px}
+.epic-count{float:right;font-size:9px;color:#71717a;font-weight:600}
+.section-title{font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px;padding-bottom:4px;border-bottom:2px solid rgba(20,184,166,0.2)}
+.downstream-tag{display:inline-block;font-size:8px;padding:3px 8px;border-radius:4px;margin:2px;background:rgba(20,184,166,0.1);border:1px solid rgba(20,184,166,0.3);color:var(--teal);font-weight:500;transition:all 0.15s}
+.downstream-tag:hover{background:rgba(20,184,166,0.2);border-color:var(--teal)}
+.req-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px;margin-left:4px}
+.badge-f{background:rgba(240,199,94,0.15);color:var(--gold);border:1px solid rgba(240,199,94,0.3)}
+.badge-nf{background:rgba(192,132,252,0.15);color:var(--stanlee);border:1px solid rgba(192,132,252,0.3)}
 .cvm-section{padding:8px 16px;background:rgba(0,0,0,0.3)}
 .cvm-title{font-size:11px;font-weight:700;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.1)}
-.filter-bar{padding:10px 24px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:rgba(0,0,0,0.2)}
-.btn{font-size:10px;padding:4px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#ccc;cursor:pointer;transition:all 0.15s}
-.btn:hover{background:rgba(255,255,255,0.12);border-color:var(--teal)}
-.btn.active{background:var(--teal);color:#fff;border-color:var(--teal)}
-.card.dimmed{opacity:0.15}
-.warn{font-size:8px;color:#E74C3C;background:rgba(231,76,60,0.1);padding:4px 8px;border-radius:3px;margin-top:4px}
+.filter-bar{padding:12px 24px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.05)}
+.btn{font-size:11px;padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#94a3b8;cursor:pointer;transition:all 0.2s;font-weight:500}
+.btn:hover{background:rgba(20,184,166,0.1);border-color:var(--teal);color:#e2e8f0}
+.btn.active{background:var(--suncorp-teal);color:#fff;border-color:var(--suncorp-teal);box-shadow:0 0 12px rgba(0,155,141,0.3)}
+.card.dimmed{opacity:0.1;transform:scale(0.98)}
+.warn{font-size:9px;color:#FB7185;background:rgba(251,113,133,0.1);padding:6px 10px;border-radius:4px;margin-top:6px;border:1px solid rgba(251,113,133,0.2)}
 </style>
 </head>
 <body>
@@ -145,10 +147,11 @@ function render(filter){
   assets.forEach(a=>{
     const totalF=a.epics.reduce((s,e)=>s+e.f,0);
     const totalNF=a.epics.reduce((s,e)=>s+e.nf,0);
-    const borderColor=a.sqcls==='sq-wade'?'var(--wade)':a.sqcls==='sq-odin'?'var(--odin)':a.sqcls==='sq-stanlee'?'var(--stanlee)':a.sqcls==='sq-rogue'?'var(--rogue)':'rgba(255,255,255,0.2)';
+    const borderColor=a.sqcls==='sq-wade'?'var(--wade)':a.sqcls==='sq-odin'?'var(--odin)':a.sqcls==='sq-stanlee'?'var(--stanlee)':a.sqcls==='sq-rogue'?'var(--rogue)':'rgba(255,255,255,0.15)';
+    const bgGlow=a.sqcls==='sq-wade'?'rgba(96,165,250,0.05)':a.sqcls==='sq-odin'?'rgba(74,222,128,0.05)':a.sqcls==='sq-stanlee'?'rgba(192,132,252,0.05)':a.sqcls==='sq-rogue'?'rgba(251,146,60,0.05)':'transparent';
     const dimmed=filter&&!filter(a)?'dimmed':'';
-    let h=`<div class="card ${dimmed}" style="border-color:${borderColor}">`;
-    h+=`<div class="card-hdr" style="background:linear-gradient(90deg,rgba(0,0,0,0.3),transparent)">`;
+    let h=`<div class="card ${dimmed}" style="border-color:${borderColor};border-width:2px">`;
+    h+=`<div class="card-hdr" style="background:linear-gradient(135deg,${bgGlow},rgba(15,23,42,0.8))">`;
     h+=`<div><div class="card-name">${a.name}</div><div class="card-cead">${a.id} · ${a.cvm}</div></div>`;
     h+=`<div style="text-align:right"><span class="card-squad ${a.sqcls}">${a.squad}</span>`;
     h+=`<div style="margin-top:4px"><span class="req-badge badge-f">${totalF}F</span><span class="req-badge badge-nf">${totalNF}NF</span></div></div>`;
