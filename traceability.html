@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DI R2 — Gold & Downstream Traceability Map</title>
+<style>
+:root{--bg:#0a0a1a;--gold:#D4A843;--teal:#0D8B8B;--wade:#3498DB;--odin:#2ECC71;--stanlee:#9B59B6;--rogue:#E67E22;--navy:#1A2B4A;--highlight:#00E5FF}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:#ccc}
+.header{padding:16px 24px;background:linear-gradient(135deg,#0d1117,#1a1a2e);border-bottom:2px solid var(--teal)}
+h1{font-size:20px;color:var(--gold);font-weight:700}
+.subtitle{font-size:11px;color:var(--teal);margin-top:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px;padding:16px}
+.card{border:1px solid rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;transition:all 0.2s;cursor:default}
+.card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+.card-hdr{padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+.card-name{font-size:13px;font-weight:700;color:#fff}
+.card-cead{font-size:9px;color:#888}
+.card-squad{font-size:8px;padding:2px 6px;border-radius:3px;font-weight:700}
+.sq-wade{background:rgba(52,152,219,0.3);color:var(--wade)}
+.sq-odin{background:rgba(46,204,113,0.3);color:var(--odin)}
+.sq-stanlee{background:rgba(155,89,182,0.3);color:var(--stanlee)}
+.sq-rogue{background:rgba(230,126,34,0.3);color:var(--rogue)}
+.card-body{padding:0 14px 14px}
+.trace-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:10px}
+.trace-row:last-child{border:none}
+.trace-label{min-width:70px;color:#666;font-size:8px;text-transform:uppercase;letter-spacing:0.5px;padding-top:2px}
+.trace-val{flex:1;color:#ccc}
+.trace-val a{color:var(--teal);text-decoration:none}
+.trace-val a:hover{text-decoration:underline}
+.epic-row{background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.15);border-radius:4px;padding:6px 8px;margin:3px 0;font-size:9px}
+.epic-key{color:#9B59B6;font-weight:700}
+.epic-name{color:#bbb;margin-left:6px}
+.epic-count{float:right;font-size:8px;color:#888}
+.section-title{font-size:9px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:1px;margin:10px 0 4px;padding-bottom:3px;border-bottom:1px solid rgba(13,139,139,0.2)}
+.downstream-tag{display:inline-block;font-size:8px;padding:2px 6px;border-radius:3px;margin:2px;background:rgba(26,43,74,0.3);border:1px solid rgba(13,139,139,0.3);color:var(--teal)}
+.req-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px}
+.badge-f{background:rgba(212,168,67,0.2);color:var(--gold)}
+.badge-nf{background:rgba(155,89,182,0.2);color:#9B59B6}
+.cvm-section{padding:8px 16px;background:rgba(0,0,0,0.3)}
+.cvm-title{font-size:11px;font-weight:700;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.filter-bar{padding:10px 24px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:rgba(0,0,0,0.2)}
+.btn{font-size:10px;padding:4px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#ccc;cursor:pointer;transition:all 0.15s}
+.btn:hover{background:rgba(255,255,255,0.12);border-color:var(--teal)}
+.btn.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+.card.dimmed{opacity:0.15}
+.warn{font-size:8px;color:#E74C3C;background:rgba(231,76,60,0.1);padding:4px 8px;border-radius:3px;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>DI R2 — Gold & Downstream Asset Traceability Map</h1>
+<div class="subtitle">Every Gold asset with its SAD, IRT, Initiative, Delivery Epics, and Downstream Consumers — click to filter</div>
+</div>
+<div class="filter-bar">
+<span style="font-size:10px;color:#888">FILTER:</span>
+<button class="btn active" onclick="filterAll()">All Assets</button>
+<button class="btn" onclick="filterCVM('David Goodes')" style="border-color:var(--wade)">David Goodes</button>
+<button class="btn" onclick="filterCVM('Steven Farrugia')" style="border-color:var(--odin)">Steven Farrugia</button>
+<span style="margin-left:8px"></span>
+<button class="btn" onclick="filterSquad('Wade')" style="border-color:var(--wade)">Wade</button>
+<button class="btn" onclick="filterSquad('Odin')" style="border-color:var(--odin)">Odin</button>
+<button class="btn" onclick="filterSquad('StanLee')" style="border-color:var(--stanlee)">StanLee</button>
+<button class="btn" onclick="filterSquad('Rogue')" style="border-color:var(--rogue)">Rogue</button>
+</div>
+<div class="grid" id="grid"></div>
+
+<script>
+const assets=[
+{id:'A-007725',name:'SDS Customer - Relationship Insights',squad:'StanLee',sqcls:'sq-stanlee',cvm:'David Goodes',owner:'Sherry Simpson',tech:'S, Arun',lead:'Vasantha Dommeti',
+sad:{n:'Customer Data DI R2 Coexistence Solution Architecture',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1405579244'},
+irt:{n:'Data Coexistence Initiative Requirements – Group 1',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1323888052'},
+init:[{n:'DGIN-162938',u:'https://jira.suncorp.app/jira/browse/DGIN-162938'},{n:'DGIN-162939',u:'https://jira.suncorp.app/jira/browse/DGIN-162939'}],
+epics:[{k:'DGIN-105996',n:'1:1 Enablement',f:8,nf:2},{k:'DGIN-106003',n:'Customer Insights',f:29,nf:2},{k:'DGIN-106007',n:'MPSC',f:1,nf:0},{k:'DGIN-106012',n:'Marketing Ops',f:8,nf:3},{k:'DGIN-106013',n:'Marketing 1:1 Strategies',f:5,nf:0}],
+downstream:['Customer Layer','CMDM Downstream','CCIP','CPP','DDM','Unica','NBA','Group Customer Analytics'],conf:'Mixed'},
+{id:'A-007295',name:'Databricks - Customer Foundation Insights',squad:'StanLee',sqcls:'sq-stanlee',cvm:'David Goodes',owner:'Sherry Simpson',tech:'S, Arun',lead:'Vasantha Dommeti',
+sad:{n:'Customer Data DI R2 Coexistence Solution Architecture',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1405579244'},
+irt:{n:'Data Coexistence Initiative Requirements – Group 1',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1323888052'},
+init:[{n:'DGIN-162938',u:'https://jira.suncorp.app/jira/browse/DGIN-162938'}],
+epics:[{k:'DGIN-105999',n:'Data Enablement',f:24,nf:2},{k:'DGIN-106000',n:'Marketing Science',f:5,nf:3},{k:'DGIN-106002',n:'Data Science Capabilities',f:16,nf:2},{k:'DGIN-106003',n:'Customer Insights',f:29,nf:2},{k:'DGIN-106004',n:'Partnership Data',f:3,nf:0},{k:'DGIN-106008',n:'Pricing',f:1,nf:0}],
+downstream:['DIMS Customer Reports','DDM','CPP','Unica','NBA Models','Data Science'],conf:'Mixed'},
+{id:'A-007616',name:'SDS - Policy Remediation Insights',squad:'Wade',sqcls:'sq-wade',cvm:'David Goodes',owner:'Petar Bubulj',tech:'CIANCIO, Daniel',lead:'Duong Dang',
+sad:{n:'Policy Remediation Insights SAD',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1616466790'},
+irt:{n:'Multiple — PANDA, CRP, CustService, DataSci, Corp, Claims, ExtFraud',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1323888052'},
+init:[{n:'DGIN-211655',u:'https://jira.suncorp.app/jira/browse/DGIN-211655'},{n:'DGIN-198993',u:'https://jira.suncorp.app/jira/browse/DGIN-198993'},{n:'DGIN-89131',u:'https://jira.suncorp.app/jira/browse/DGIN-89131'}],
+epics:[{k:'DGIN-116960',n:'Customer Service QA - G1b',f:6,nf:0},{k:'DGIN-117075',n:'Cust Service Perf - G1b',f:11,nf:0},{k:'DGIN-67339',n:'Cust Service Perf - G1',f:17,nf:3},{k:'DGIN-67343',n:'Customer Service QA - G1',f:5,nf:0}],
+downstream:['PANDA','Claims Insights','CRP Data Mart','DDO','Insurance Performance','BI Dashboards','Compliance'],conf:'Confirmed'},
+{id:'A-007484',name:'SDS Finance Actuarial - Insights',squad:'Odin',sqcls:'sq-odin',cvm:'Steven Farrugia',owner:'Petar Bubulj',tech:'BATRA, Mohit',lead:'Melanie Latimer',
+sad:{n:'Finance R2 Actuaries Solution Overview',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1273646949'},
+irt:{n:'Corp Services – Actuarial – G1, G2',u:'https://confluence.suncorp.app/confluence/display/DISPACE/Corporate+Services+-+Actuarial+-+DI+IRT+-+Group+1'},
+init:[{n:'DGIN-158542',u:'https://jira.suncorp.app/jira/browse/DGIN-158542'}],
+epics:[{k:'DGIN-114162',n:'Net Zero Emissions - G1',f:4,nf:0},{k:'DGIN-141074',n:'ACTUARIAL',f:18,nf:0},{k:'DGIN-141076',n:'RISK',f:6,nf:0},{k:'DGIN-89571',n:'Capital Mgmt & Reinsurance - G1',f:8,nf:4}],
+downstream:['SAS Actuarial Models','Finity'],conf:'Confirmed',warn:'DGIN-114162 tagged Wade but mapped to Odin'},
+{id:'A-007504',name:'SDS Automation - Insights',squad:'Odin',sqcls:'sq-odin',cvm:'Steven Farrugia',owner:'Brenda Curran',tech:'BATRA, Mohit',lead:'Melanie Latimer',
+sad:{n:'Automation Insights Transition State SAD',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1581909179'},
+irt:{n:'Corp Services - Automation - G1',u:'https://confluence.suncorp.app/confluence/display/DISPACE/Corporate+Services+-+Automation+-+DI+IRT+-+Group+1'},
+init:[{n:'DGIN-158764',u:'https://jira.suncorp.app/jira/browse/DGIN-158764'}],
+epics:[{k:'DGIN-54419',n:'Automation - Grp1',f:15,nf:1}],
+downstream:['Jarvis','Sherlock','EcoBot','Buzz','Rico','Balto','Smart PD'],conf:'Confirmed'},
+{id:'A-007411',name:'SDS Operational Excellence Insights',squad:'Odin',sqcls:'sq-odin',cvm:'Steven Farrugia',owner:'Sushma Suresh',tech:'BATRA, Mohit',lead:'Melanie Latimer',
+sad:{n:'Insurance Operations Insights Transition State SAD',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1500188074'},
+irt:{n:'Corp Services – Operations – G1, G1b',u:'https://confluence.suncorp.app/confluence/display/DISPACE/Corporate+Services+-+Operations+-+DI+IRT+-+Group+1'},
+init:[{n:'DGIN-158541',u:'https://jira.suncorp.app/jira/browse/DGIN-158541'}],
+epics:[{k:'DGIN-115822',n:'Ins Operations - G1b',f:3,nf:0},{k:'DGIN-141078',n:'ADVOCACY - COMPLAINTS',f:7,nf:0},{k:'DGIN-141079',n:'ADVOCACY - CEV',f:13,nf:0},{k:'DGIN-141082',n:'COMPLIANCE',f:4,nf:0},{k:'DGIN-141083',n:'INTERNAL AUDIT',f:4,nf:0},{k:'DGIN-89570',n:'Ins Operations - G1',f:8,nf:3}],
+downstream:['Reconciliation Dashboards','PANDA','Compliance Reporting'],conf:'Mixed'},
+{id:'A-007412',name:'SDS Enlighten OpEx Extracts',squad:'Odin',sqcls:'sq-odin',cvm:'Steven Farrugia',owner:'Sushma Suresh',tech:'BATRA, Mohit',lead:'Melanie Latimer',
+sad:{n:'Insurance Operations Insights Transition State SAD',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1500188074'},
+irt:{n:'Corp Services – Operations – G1, G1b',u:'https://confluence.suncorp.app/confluence/display/DISPACE/Corporate+Services+-+Operations+-+DI+IRT+-+Group+1'},
+init:[{n:'DGIN-158541',u:'https://jira.suncorp.app/jira/browse/DGIN-158541'}],
+epics:[{k:'DGIN-115822',n:'Ins Operations - G1b',f:3,nf:0},{k:'DGIN-89570',n:'Ins Operations - G1',f:8,nf:3}],
+downstream:['Enlighten Workforce Management'],conf:'Mixed'},
+{id:'A-007479',name:'Instinct Internal Fraud - Extracts',squad:'Odin',sqcls:'sq-odin',cvm:'Steven Farrugia',owner:'Taemar Handes',tech:'BATRA, Mohit',lead:'Melanie Latimer',
+sad:{n:'Internal Fraud Transition State SAD',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1508500870'},
+irt:{n:'Corp Services - Internal Fraud - G2',u:'https://confluence.suncorp.app/confluence/display/DISPACE/Corporate+Services+-+Internal+Fraud+-+DI+IRT+-+Group+2'},
+init:[{n:'DGIN-158540',u:'https://jira.suncorp.app/jira/browse/DGIN-158540'}],
+epics:[{k:'DGIN-89569',n:'External Fraud - G1',f:8,nf:0}],
+downstream:['Internal Fraud (Instinct)'],conf:'Confirmed'},
+{id:'A-007696',name:'SDS - Finance Tax - Extracts',squad:'Odin',sqcls:'sq-odin',cvm:'Steven Farrugia',owner:'Nicole Revell',tech:'BATRA, Mohit',lead:'Melanie Latimer',
+sad:{n:'No dedicated SAD',u:''},
+irt:{n:'Corp Services – Actuarial – G1',u:'https://confluence.suncorp.app/confluence/display/DISPACE/Corporate+Services+-+Actuarial+-+DI+IRT+-+Group+1'},
+init:[{n:'DGIN-158546',u:'https://jira.suncorp.app/jira/browse/DGIN-158546'}],
+epics:[],downstream:['Finance Tax Reporting'],conf:'N/A',warn:'BABOK Gap: No requirement epics mapped'},
+{id:'A-007472',name:'Pricing Foundation Insights',squad:'Rogue',sqcls:'sq-rogue',cvm:'David Goodes',owner:'Zihan Gao',tech:'—',lead:'David Crosswell',
+sad:{n:'Pricing Data Analytics Platform SAD',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1372042339'},
+irt:{n:'DI-P&A-IR-R2 Initiative BRD',u:'https://confluence.suncorp.app/confluence/spaces/PRICING/pages/1251500856'},
+init:[],
+epics:[{k:'DGIN-84531',n:'Pricing Data | Detailed Design',f:52,nf:6},{k:'DGIN-92833',n:'PFL Pricing Audit Logs',f:20,nf:0},{k:'DGIN-92863',n:'Data Access Segregation',f:10,nf:8},{k:'DGIN-98585',n:'Data Pipelines & Serving',f:15,nf:7},{k:'DGIN-98607',n:'Business Data Processes',f:2,nf:6}],
+downstream:['Live Pricing (SYON)','CaPE APIs','Pricing Models'],conf:'Confirmed'},
+{id:'A-007704',name:'Live Pricing Extracts (CaPE)',squad:'Rogue',sqcls:'sq-rogue',cvm:'David Goodes',owner:'Petar Bubulj',tech:'—',lead:'David Crosswell',
+sad:{n:'Pricing Engine Live Pricing Insights SAD',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1400293205'},
+irt:{n:'Multiple IRTs (RTM)',u:'https://confluence.suncorp.app/confluence/spaces/DISPACE/pages/1261451010'},
+init:[],
+epics:[{k:'DGIN-77226',n:'RAID (Dependencies)',f:1,nf:1},{k:'DGIN-98598',n:'Data Analytics Platform',f:2,nf:0}],
+downstream:['CaPE Pricing APIs','Live Pricing Engine'],conf:'—'},
+{id:'A-007748',name:'SDS Customer AAINZ Extracts',squad:'—',sqcls:'',cvm:'—',owner:'Robert Joscelyne',tech:'—',lead:'—',
+sad:{n:'—',u:''},irt:{n:'—',u:''},init:[],epics:[],downstream:['AAI NZ Extracts'],conf:'—',warn:'No epics mapped'},
+{id:'A-007870',name:'Quote Trigger Extracts (SFMC)',squad:'—',sqcls:'',cvm:'—',owner:'—',tech:'—',lead:'—',
+sad:{n:'—',u:''},irt:{n:'—',u:''},init:[],epics:[],downstream:['Salesforce Marketing Cloud'],conf:'—',warn:'No epics mapped'}
+];
+
+function render(filter){
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  assets.forEach(a=>{
+    const totalF=a.epics.reduce((s,e)=>s+e.f,0);
+    const totalNF=a.epics.reduce((s,e)=>s+e.nf,0);
+    const borderColor=a.sqcls==='sq-wade'?'var(--wade)':a.sqcls==='sq-odin'?'var(--odin)':a.sqcls==='sq-stanlee'?'var(--stanlee)':a.sqcls==='sq-rogue'?'var(--rogue)':'rgba(255,255,255,0.2)';
+    const dimmed=filter&&!filter(a)?'dimmed':'';
+    let h=`<div class="card ${dimmed}" style="border-color:${borderColor}">`;
+    h+=`<div class="card-hdr" style="background:linear-gradient(90deg,rgba(0,0,0,0.3),transparent)">`;
+    h+=`<div><div class="card-name">${a.name}</div><div class="card-cead">${a.id} · ${a.cvm}</div></div>`;
+    h+=`<div style="text-align:right"><span class="card-squad ${a.sqcls}">${a.squad}</span>`;
+    h+=`<div style="margin-top:4px"><span class="req-badge badge-f">${totalF}F</span><span class="req-badge badge-nf">${totalNF}NF</span></div></div>`;
+    h+=`</div><div class="card-body">`;
+    // Traceability chain
+    h+=`<div class="trace-row"><span class="trace-label">SAD</span><span class="trace-val">${a.sad.u?'<a href="'+a.sad.u+'" target="_blank">'+a.sad.n+'</a>':'<span style="color:#E74C3C">'+a.sad.n+'</span>'}</span></div>`;
+    h+=`<div class="trace-row"><span class="trace-label">IRT</span><span class="trace-val">${a.irt.u?'<a href="'+a.irt.u+'" target="_blank">'+a.irt.n+'</a>':a.irt.n}</span></div>`;
+    h+=`<div class="trace-row"><span class="trace-label">Initiative</span><span class="trace-val">${a.init.length?a.init.map(i=>'<a href="'+i.u+'" target="_blank">'+i.n+'</a>').join(', '):'—'}</span></div>`;
+    h+=`<div class="trace-row"><span class="trace-label">Owner</span><span class="trace-val">${a.owner} · Tech: ${a.tech} · Lead: ${a.lead}</span></div>`;
+    // Epics
+    if(a.epics.length){
+      h+=`<div class="section-title">Delivery Epics (${a.epics.length})</div>`;
+      a.epics.forEach(e=>{
+        h+=`<div class="epic-row"><span class="epic-key"><a href="https://jira.suncorp.app/jira/browse/${e.k}" target="_blank" style="color:#9B59B6">${e.k}</a></span>`;
+        h+=`<span class="epic-name">${e.n}</span><span class="epic-count">${e.f}F ${e.nf}NF</span></div>`;
+      });
+    }
+    // Downstream
+    if(a.downstream.length){
+      h+=`<div class="section-title">Downstream Consumers</div>`;
+      a.downstream.forEach(d=>{h+=`<span class="downstream-tag">${d}</span>`});
+    }
+    // Warning
+    if(a.warn)h+=`<div class="warn">⚠️ ${a.warn}</div>`;
+    h+=`</div></div>`;
+    grid.innerHTML+=h;
+  });
+}
+function filterAll(){render(null);document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'));document.querySelector('.btn').classList.add('active')}
+function filterCVM(cvm){render(a=>a.cvm===cvm);document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'))}
+function filterSquad(sq){render(a=>a.squad&&a.squad.toLowerCase().includes(sq.toLowerCase()));document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'))}
+render(null);
+</script>
+</body>
+</html>
