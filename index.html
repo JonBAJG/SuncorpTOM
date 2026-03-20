@@ -523,37 +523,70 @@ h1{font-size:20px;color:var(--gold);font-weight:700}
 
 <div class="arrow-col" id="arr4"><div class="arr">›</div><div class="arr">›</div><div class="arr">›</div></div>
 
-<!-- DOWNSTREAM -->
+<!-- DOWNSTREAM — TIERED -->
 <div class="lane l-down">
-<div class="lane-hdr">Downstream Consumers</div>
+<div class="lane-hdr">Downstream (Tiered)</div>
 <div class="lane-body">
-<div class="group"><div class="group-title">Automation Bots</div>
-<div class="node n-down" data-id="down_bots" data-paths="">Jarvis · Sherlock · EcoBot · Buzz · Rico · Balto · Smart PD</div></div>
-<div class="group"><div class="group-title">Pricing Engine</div>
-<div class="node n-down" data-id="down_pricing" data-paths="">Live Pricing (SYON) · CaPE APIs</div></div>
-<div class="group"><div class="group-title">Marketing & Campaigns</div>
-<div class="node n-down" data-id="down_marketing" data-paths="">Unica · DDM · CPP · NBA</div>
-<div class="node n-down" data-id="down_sfmc" data-paths="">Salesforce Marketing Cloud</div></div>
-<div class="group"><div class="group-title">BI & Reporting</div>
-<div class="node n-down" data-id="down_bi" data-paths="">Insurance Perf · Reconciliation · PANDA · DIMS</div></div>
-<div class="group"><div class="group-title">Actuarial</div>
-<div class="node n-down" data-id="down_actuarial" data-paths="">SAS Actuarial Models · Finity</div></div>
-<div class="group"><div class="group-title">Claims & Fraud</div>
-<div class="node n-down" data-id="down_claims" data-paths="">Claims Processing</div>
-<div class="node n-down" data-id="down_fraud" data-paths="">Internal Fraud (Instinct)</div></div>
-<div class="group"><div class="group-title">Compliance</div>
-<div class="node n-down" data-id="down_compliance" data-paths="">Customer Remediation · DDO · Enterprise Complaints</div>
-<div class="node n-down" data-id="down_ddo" data-paths="">DDO Compliance</div></div>
-<div class="group"><div class="group-title">Customer Intelligence</div>
-<div class="node n-down" data-id="down_custintel" data-paths="">Group Analytics · CMDM Downstream · CCIP</div></div>
-<div class="group"><div class="group-title">Enlighten</div>
-<div class="node n-down" data-id="down_enlighten" data-paths="">Enlighten Workforce Management</div></div>
-<div class="group"><div class="group-title">Finance</div>
-<div class="node n-down" data-id="down_tax" data-paths="">Finance Tax Reporting</div></div>
-<div class="group"><div class="group-title">AAI NZ</div>
-<div class="node n-down" data-id="down_aainz" data-paths="">AAI NZ Extracts (Billing, Policy, Quotes, Earnings)</div></div>
-<div class="group"><div class="group-title">Co-existence Legacy</div>
-<div class="node n-down" data-id="down_coex" data-paths="">Customer Layer · Unica · CPA · Redshift · ORCA</div></div>
+
+<div class="group" style="border:1px solid rgba(230,126,34,0.3);border-radius:6px;padding:4px;background:rgba(230,126,34,0.04)">
+<div class="group-title" style="color:#E67E22;border-color:rgba(230,126,34,0.3)">Tier 1 — Direct from Gold</div>
+<div class="node n-down" data-id="down_bots" data-paths="" style="border-left-color:#E67E22">Automation Bots (Jarvis · Sherlock · EcoBot · Buzz · Rico · Balto · Smart PD)</div>
+<div class="node n-down" data-id="down_fraud" data-paths="" style="border-left-color:#E67E22">Internal Fraud (Instinct)</div>
+<div class="node n-down" data-id="down_actuarial" data-paths="" style="border-left-color:#E67E22">SAS Actuarial Models · Finity</div>
+<div class="node n-down" data-id="down_enlighten" data-paths="" style="border-left-color:#E67E22">Enlighten Workforce Management</div>
+<div class="node n-down" data-id="down_pricing" data-paths="" style="border-left-color:#E67E22">Live Pricing (SYON) · CaPE APIs</div>
+<div class="node n-down" data-id="down_sfmc" data-paths="" style="border-left-color:#E67E22">Salesforce Marketing Cloud (Quote Triggers)</div>
+<div class="node n-down" data-id="down_aainz" data-paths="" style="border-left-color:#E67E22">AAI NZ Extracts (Billing, Policy, Quotes, Earnings)</div>
+<div class="node n-down" data-id="down_tax" data-paths="" style="border-left-color:#E67E22">Finance Tax Reporting</div>
+<div class="node n-down" data-id="down_datasci" data-paths="" style="border-left-color:#E67E22">Data Science Models (NBA · SDS Cust)</div>
+</div>
+
+<div class="group" style="border:1px solid rgba(52,152,219,0.3);border-radius:6px;padding:4px;margin-top:6px;background:rgba(52,152,219,0.04)">
+<div class="group-title" style="color:#3498DB;border-color:rgba(52,152,219,0.3)">Tier 2 — Data Hub Redshift (Enterprise Distribution)</div>
+<div class="node n-down" data-id="down_datahub" data-paths="down_ins_rs,down_cust_rs,down_custuda_rs,down_orca_rs,down_aainz_rs" style="border-left-color:#3498DB">Enterprise Datawarehouse Redshift (A-007645)</div>
+</div>
+
+<div class="group" style="border:1px solid rgba(155,89,182,0.3);border-radius:6px;padding:4px;margin-top:6px;background:rgba(155,89,182,0.04)">
+<div class="group-title" style="color:#9B59B6;border-color:rgba(155,89,182,0.3)">Tier 3 — Domain Redshift Clusters</div>
+<div class="node n-down" data-id="down_ins_rs" data-paths="down_panda,down_claims,down_crp,down_ddo,down_comm_uda,down_ins_perf,down_recon" style="border-left-color:#9B59B6;font-weight:700">Insurance Redshift Cluster</div>
+<div style="padding-left:12px">
+<div class="node n-down" data-id="down_panda" data-paths="down_bi" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ PANDA (Consumer Performance)</div>
+<div class="node n-down" data-id="down_claims" data-paths="" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ Claims Insights</div>
+<div class="node n-down" data-id="down_crp" data-paths="" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ CRP Data Mart (Cyclone Reinsurance)</div>
+<div class="node n-down" data-id="down_ddo" data-paths="down_compliance" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ DDO Compliance</div>
+<div class="node n-down" data-id="down_comm_uda" data-paths="" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ Commercial UDA (Self Stitch)</div>
+<div class="node n-down" data-id="down_ins_perf" data-paths="down_bi" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ Insurance Performance Insights</div>
+<div class="node n-down" data-id="down_recon" data-paths="down_bi" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ Reconciliation Insights</div>
+</div>
+<div class="node n-down" data-id="down_cust_rs" data-paths="down_custlayer,down_cmdm_ds,down_ccip,down_complaints" style="border-left-color:#9B59B6;font-weight:700;margin-top:4px">Customer Redshift Cluster</div>
+<div style="padding-left:12px">
+<div class="node n-down" data-id="down_custlayer" data-paths="down_datasci_fb" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ Customer Layer (A-003373)</div>
+<div class="node n-down" data-id="down_cmdm_ds" data-paths="" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ CMDM Downstream (A-005717)</div>
+<div class="node n-down" data-id="down_ccip" data-paths="" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ CCIP (A-002241)</div>
+<div class="node n-down" data-id="down_complaints" data-paths="" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ Enterprise Complaints</div>
+<div class="node n-down" data-id="down_datasci_fb" data-paths="" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ Data Science feedback loop</div>
+</div>
+<div class="node n-down" data-id="down_custuda_rs" data-paths="down_cpp,down_ddm,down_grp_cust" style="border-left-color:#9B59B6;font-weight:700;margin-top:4px">Customer UDA Redshift Cluster</div>
+<div style="padding-left:12px">
+<div class="node n-down" data-id="down_cpp" data-paths="" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ CPP (Customer Personalisation Platform)</div>
+<div class="node n-down" data-id="down_ddm" data-paths="" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ DDM (Data-Driven Marketing)</div>
+<div class="node n-down" data-id="down_grp_cust" data-paths="" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ Group Customer Analytics</div>
+</div>
+<div class="node n-down" data-id="down_orca_rs" data-paths="down_comm_strata" style="border-left-color:#9B59B6;font-weight:700;margin-top:4px">ORCA Redshift Cluster</div>
+<div style="padding-left:12px">
+<div class="node n-down" data-id="down_comm_strata" data-paths="" style="font-size:9px;border-left-color:rgba(155,89,182,0.5)">↳ Commercial Strata</div>
+</div>
+<div class="node n-down" data-id="down_aainz_rs" data-paths="" style="border-left-color:#9B59B6;font-weight:700;margin-top:4px">AAI NZ Redshift Cluster</div>
+</div>
+
+<div class="group" style="border:1px solid rgba(46,204,113,0.3);border-radius:6px;padding:4px;margin-top:6px;background:rgba(46,204,113,0.04)">
+<div class="group-title" style="color:#2ECC71;border-color:rgba(46,204,113,0.3)">Tier 4 — End Applications</div>
+<div class="node n-down" data-id="down_bi" data-paths="" style="border-left-color:#2ECC71">BI Dashboards (Tableau · Power BI)</div>
+<div class="node n-down" data-id="down_marketing" data-paths="" style="border-left-color:#2ECC71">Unica Campaign Platform</div>
+<div class="node n-down" data-id="down_compliance" data-paths="" style="border-left-color:#2ECC71">Compliance & Regulatory Reporting</div>
+<div class="node n-down" data-id="down_custintel" data-paths="" style="border-left-color:#2ECC71">Customer Remediation Workflows</div>
+</div>
+
 </div></div>
 
 </div>
